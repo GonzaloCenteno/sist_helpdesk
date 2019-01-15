@@ -106,6 +106,23 @@
                     </div>
                 </div>
                 <hr>
+                @if(session('rol') == 1 || session('rol') == 2)
+                    <center><h4>CAMBIAR PRIORIDAD</h4></center>
+                    <div class="form-row">
+                        <div class="form-group col-md-9">
+                            <select id="prioridad_asignados" name="prioridad_asignados" class="form-control rounded">
+                                @foreach($prioridad as $pr)          
+                                    <option value="{{ $pr->prio_id }}">{{ $pr->prio_desc }}</option>
+                                @endforeach             
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <button type="button" class="btn btn-primary" id="btn_prioridad_asignados">MODIFICAR</button>
+                        </div>
+                    </div>
+                    <hr>
+                @else
+                @endif
                 <center><h3>RESPUESTAS</h3></center>
                 <div class="form-row" id="detalle">
 <!--                    <div class="form-group col-md-12">

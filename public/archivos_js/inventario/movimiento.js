@@ -6,11 +6,11 @@ jQuery(document).ready(function($){
         height: '450px', autowidth: true,
         toolbarfilter: true,
         sortable:false,
-//        pgbuttons: false,
-//        pgtext: null, 
+        pgbuttons: false,
+        pgtext: null,
         //cmTemplate: { sortable: false },
         colNames: ['ID', 'IDITEM', 'ITEM', 'IDPVT_O', 'PUNTO VENTA ORIGEN', 'IDPVT_D','PUNTO VENTA DESTINO', 'IDUSUARIO', 'USUARIO', 'FECHA', 'ESTADO'],
-        rowNum: 10, sortname: 'mov_id', sortorder: 'desc', viewrecords: true, caption: 'LISTA DE MOVIMIENTOS', align: "center",
+        rowNum: 10, sortname: 'mov_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_movimiento" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE MOVIMIENTOS -', align: "center",
         colModel: [
             {name: 'mov_id', index: 'mov_id', align: 'left',width: 10, hidden:true},
             {name: 'id_item', index: 'id_item', align: 'center', width: 15, hidden:true},
@@ -72,6 +72,9 @@ jQuery(document).on("click", "#btn_nuevo_movimiento", function(){
     $('#titulo_movimiento').text('CREAR NUEVO MOVIMIENTO');
     $('#btn_guardar_movimiento').show();
     $('#btn_actualizar_movimiento').hide();
+    $('#select_item_m').hide();
+    $('#select_pvt_o').hide();
+    $('#select_pvt_d').hide();
     limpiar_datos_movimiento();
 })
 
@@ -132,16 +135,41 @@ jQuery(document).on("click", "#btn_modificar_movimiento", function(){
         $('#btn_guardar_movimiento').hide();
         $('#btn_actualizar_movimiento').show();
         
+        $('#select_item_m').show();
+        $('#id_item').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_item'));
+        $('#desc_item_m').text('ITEM ACTUAL: ' + $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'item_id'));
+        
+        $('#select_pvt_o').show();
+        $('#id_pvt_o').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_ori'));
+        $('#desc_pvt_o').text('PUNTO DE VENTA ORIGEN: ' + $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'pvt_ori'));
+        
+        $('#select_pvt_d').show();
+        $('#id_pvt_d').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_des'));
+        $('#desc_pvt_d').text('PUNTO DE VENTA DESTINO: ' + $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'pvt_des'));
+        
         $('#mdl_mfecha').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'mov_fec'));
-        $("#mdl_mitem").select2("val", $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_item'));
-        $("#mdl_pvt_origen").select2("val", $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_ori'));
-        $("#mdl_pvt_destino").select2("val", $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_des'));
+
                 
     }else{
         mostraralertasconfoco("NO HAY NINGUN MOVIMIENTO SELECCIONADO","#tabla_movimientos");
     }
     
 })
+
+function select_item()
+{
+    $('#id_item').val($('#mdl_mitem').val());
+}
+
+function select_ptv_o()
+{
+    $('#id_pvt_o').val($('#mdl_pvt_origen').val());
+}
+
+function select_ptv_d()
+{
+    $('#id_pvt_d').val($('#mdl_pvt_destino').val());
+}
 
 jQuery(document).on("click", "#btn_actualizar_movimiento", function(){
     
@@ -157,9 +185,9 @@ jQuery(document).on("click", "#btn_actualizar_movimiento", function(){
         type: 'GET',
         data:
         {
-            id_item: $("#mdl_mitem").val(),
-            pvt_origen: $("#mdl_pvt_origen").val(),
-            pvt_destino: $("#mdl_pvt_destino").val(),
+            id_item: $("#id_item").val(),
+            pvt_origen: $("#id_pvt_o").val(),
+            pvt_destino: $("#id_pvt_d").val(),
             fecha: $('#mdl_mfecha').val(),
             tipo:1
         },
@@ -276,3 +304,13 @@ function cambiar_estado_item(id_item,estado)
         mostraralertasconfoco("NO SE PUEDE REALIZAR ESTA ACCION","#tabla_items");
     }
 }
+
+jQuery(document).on("click", "#btn_act_table_movimiento", function(){
+    jQuery("#tabla_movimientos").jqGrid('setGridParam', {
+        url: 'movimientos/0?grid=movimientos'
+    }).trigger('reloadGrid');
+    
+    $('#txt_descripcion_item').val('');
+    $('#txt_fecha_desde').val('');
+    $('#txt_fecha_hasta').val('');
+})

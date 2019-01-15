@@ -19,7 +19,8 @@ class Ticket_Buscar_Controller extends BaseSoapController
             {
                 $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
                 $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                return view('tickets/vw_ticket_buscar',compact('tblmenu_men','tblmenu_men2'));
+                $prioridad = DB::table('cromohelp.tbl_prioridad')->orderBy('prio_id','asc')->get();
+                return view('tickets/vw_ticket_buscar',compact('tblmenu_men','tblmenu_men2','prioridad'));
             }
             else
             {
@@ -50,10 +51,6 @@ class Ticket_Buscar_Controller extends BaseSoapController
             if ($request['grid'] == 'buscar_tickets') 
             {
                 return $this->crear_tabla_buscar_tickets($request);
-            }
-            if ($request['validar'] == 'validar_tickets') 
-            {
-                return $this->validar_buscar_tickets($request);
             }
         }
     }
@@ -200,24 +197,6 @@ class Ticket_Buscar_Controller extends BaseSoapController
                 );  
             }
             return response()->json($Lista);
-        }
-    }
-    
-    public function validar_buscar_tickets(Request $request)
-    {
-        $fecha_desde = date("d/m/Y", strtotime($request['fecha_desde']));
-        $fecha_hasta = date("d/m/Y", strtotime($request['fecha_hasta'])).' 23:59:00';
-        $validar_ticket = DB::table('cromohelp.tbl_cabticket')
-                ->where('cabt_asunto','like', '%'.strtoupper($request['titulo']).'%')
-                ->where('cabt_usutec','<>',0)
-                ->whereBetween('cabt_feccre', [$fecha_desde, $fecha_hasta])->get();
-        if ($validar_ticket->count() > 0) 
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
         }
     }
     

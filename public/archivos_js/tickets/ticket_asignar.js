@@ -6,6 +6,8 @@ jQuery(document).ready(function($){
         height: '450px', autowidth: true,
         toolbarfilter: true,
         sortable:false,
+        pgbuttons: false,
+        pgtext: null, 
         //cmTemplate: { sortable: false },
         colNames: ['ID', 'TITULO', 'TIPO', 'AREA', 'PRIORIDAD', 'ESTADO', 'VER TICKET', 'ASIGNAR TICKET'],
         rowNum: 20, sortname: 'cabt_id', sortorder: 'desc', viewrecords: true, caption: 'LISTA DE TICKETS POR ASIGNAR', align: "center",
@@ -20,7 +22,10 @@ jQuery(document).ready(function($){
             {name: 'cabt_id', index: 'cabt_id', align: 'center', width: 25}
         ],
         pager: '#paginador_tabla_asignar_tickets',
-        rowList: [10, 20, 30, 40, 50],
+        rowList: [10, 20, 30, 40, 50, 100000000],
+        loadComplete: function() {
+            $("option[value=100000000]").text('TODOS');
+        },
         onSelectRow: function (Id){},
         ondblClickRow: function (Id){}
     });

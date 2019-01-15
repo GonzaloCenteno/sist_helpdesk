@@ -92,7 +92,8 @@
                     </div>
                     <div class="form-group col-md-12">
                         <label for="mdl_producto" class="fw-500">SELECCIONE UN PROVEEDOR:</label>
-                        <select id="mdl_producto" class="form-control" style="width: 100%;">
+                        <div class="text-center" id="select_proveedor_f"><input type="hidden" id="id_proveedor_f"><label id="desc_proveedor_f" class="fw-500"></label></div>
+                        <select id="mdl_producto" onchange="select_proveedor();" class="form-control" style="width: 100%;">
                             @if($num == 1)
                                 <option value="{{ $proveedor->IDPRO }}"> {{ $proveedor->RAZSOC }} </option>
                             @else

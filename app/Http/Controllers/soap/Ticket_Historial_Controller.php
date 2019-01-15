@@ -51,10 +51,6 @@ class Ticket_Historial_Controller extends BaseSoapController
             {
                 return $this->crear_tabla_buscar_tickets($request);
             }
-            if ($request['validar'] == 'validar_tickets') 
-            {
-                return $this->validar_buscar_tickets($request);
-            }
         }
     }
 
@@ -196,37 +192,6 @@ class Ticket_Historial_Controller extends BaseSoapController
                 );  
             }
             return response()->json($Lista);
-        }
-    }
-    
-    public function validar_buscar_tickets(Request $request)
-    {
-        if (session('rol') == 1) 
-        {
-            $fecha_desde = date("d/m/Y", strtotime($request['fecha_desde']));
-            $fecha_hasta = date("d/m/Y", strtotime($request['fecha_hasta'])).' 23:59:00';
-            $validar_ticket = DB::table('cromohelp.tbl_cabticket')
-                    ->where('cabt_asunto','like', '%'.strtoupper($request['titulo']).'%')
-                    ->whereBetween('cabt_feccre', [$fecha_desde, $fecha_hasta])->get();
-        }
-        else
-        {
-            $fecha_desde = date("d/m/Y", strtotime($request['fecha_desde']));
-            $fecha_hasta = date("d/m/Y", strtotime($request['fecha_hasta'])).' 23:59:00';
-            $validar_ticket = DB::table('cromohelp.tbl_cabticket')
-                    ->where('cabt_asunto','like', '%'.strtoupper($request['titulo']).'%')
-                    ->where('cabt_usutec',session('usutec'))
-                    ->where('cabt_est', 4)
-                    ->whereBetween('cabt_feccre', [$fecha_desde, $fecha_hasta])->get();
-        }
-        
-        if ($validar_ticket->count() > 0) 
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
         }
     }
     

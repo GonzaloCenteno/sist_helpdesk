@@ -100,7 +100,8 @@
                     </div>
                     <div class="form-group col-md-12">
                         <label for="mdl_imarca" class="fw-500">SELECCIONE UNA MARCA:</label>
-                        <select id="mdl_imarca" class="form-control" style="width: 100%;">
+                        <div class="text-center" id="select_marca_i"><input type="hidden" id="id_marca"><label id="desc_marca_i" class="fw-500"></label></div>
+                        <select id="mdl_imarca" onchange="select_marca();" class="form-control" style="width: 100%;">
                             @if($num_mar == 1)
                                 <option value="{{ $marca->ID }}"> {{ $marca->DESC }} </option>
                             @else
@@ -112,7 +113,8 @@
                     </div>
                     <div class="form-group col-md-12">
                         <label for="mdl_iproveedor" class="fw-500">SELECCIONE UN PROVEEDOR:</label>
-                        <select id="mdl_iproveedor" class="form-control" style="width: 100%;">
+                        <div class="text-center" id="select_proveedor_i"><input type="hidden" id="id_proveedor"><label id="desc_proveedor_i" class="fw-500"></label></div>
+                        <select id="mdl_iproveedor" onchange="select_proveedor();" class="form-control" style="width: 100%;">
                             @if($num_pro == 1)
                                 <option value="{{ $proveedor->IDPRO }}"> {{ $proveedor->RAZSOC }} </option>
                             @else
@@ -123,8 +125,9 @@
                         </select>
                     </div>
                     <div class="form-group col-md-12">
-                        <label for="mdl_ifactura" class="fw-500">SELECCIONE UNA FACTURA:</label>
-                        <select id="mdl_ifactura" class="form-control" style="width: 100%;">
+                        <label for="mdl_ifactura" class="fw-500">SELECCIONE UNA FACTURA:</label>.
+                        <div class="text-center" id="select_factura_i"><input type="hidden" id="id_factura"><label id="desc_factura_i" class="fw-500"></label></div>
+                        <select id="mdl_ifactura" onchange="select_factura();" class="form-control" style="width: 100%;">
                             @if($num_fac == 1)
                                 <option value="{{ $factura->IDPRO }}"> {{ $factura->SERIE }} - {{ $factura->NUM }}</option>
                             @else

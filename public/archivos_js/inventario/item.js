@@ -6,11 +6,11 @@ jQuery(document).ready(function($){
         height: '450px', autowidth: true,
         toolbarfilter: true,
         sortable:false,
-//        pgbuttons: false,
-//        pgtext: null, 
+        pgbuttons: false,
+        pgtext: null,
         //cmTemplate: { sortable: false },
         colNames: ['ID', 'DESCRIPCION', 'SERIE', 'CANT.', 'IDMARCA', 'MARCA','IDPROVEEODR', 'PROVEE.','IDFACTURA', 'FACTURA','PRECIO','FECHA','ESTADO'],
-        rowNum: 10, sortname: 'item_id', sortorder: 'desc', viewrecords: true, caption: 'LISTA DE ITEMS', align: "center",
+        rowNum: 10, sortname: 'item_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_item" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE ITEMS -', align: "center",
         colModel: [
             {name: 'item_id', index: 'item_id', align: 'left',width: 10, hidden:true},
             {name: 'item_desc', index: 'item_desc', align: 'left', width: 25},
@@ -78,6 +78,9 @@ jQuery(document).on("click", "#btn_nuevo_item", function(){
     $('#titulo_item').text('CREAR NUEVO ITEM');
     $('#btn_guardar_item').show();
     $('#btn_actualizar_item').hide();
+    $('#select_marca_i').hide();
+    $('#select_proveedor_i').hide();
+    $('#select_factura_i').hide();
     limpiar_datos_item();
 })
 
@@ -162,20 +165,44 @@ jQuery(document).on("click", "#btn_modificar_item", function(){
         $('#btn_guardar_item').hide();
         $('#btn_actualizar_item').show();
         
+        $('#select_marca_i').show();
+        $('#id_marca').val($('#tabla_items').jqGrid ('getCell', id_item, 'id_marca'));
+        $('#desc_marca_i').text('MARCA ACTUAL: ' + $('#tabla_items').jqGrid ('getCell', id_item, 'mar_id'));
+        
+        $('#select_proveedor_i').show();
+        $('#id_proveedor').val($('#tabla_items').jqGrid ('getCell', id_item, 'id_proveedor'));
+        $('#desc_proveedor_i').text('PROVEEDOR ACTUAL: ' + $('#tabla_items').jqGrid ('getCell', id_item, 'pro_id'));
+        
+        $('#select_factura_i').show();
+        $('#id_factura').val($('#tabla_items').jqGrid ('getCell', id_item, 'id_factura'));
+        $('#desc_factura_i').text('FACTURA ACTUAL: ' + $('#tabla_items').jqGrid ('getCell', id_item, 'fact_id'));
+        
         $('#mdl_idescripcion').val($('#tabla_items').jqGrid ('getCell', id_item, 'item_desc'));
         $('#mdl_iserie').val($('#tabla_items').jqGrid ('getCell', id_item, 'item_ser'));
         $('#mdl_icantidad').val($('#tabla_items').jqGrid ('getCell', id_item, 'item_cant'));
         $('#mdl_iprecio').val($('#tabla_items').jqGrid ('getCell', id_item, 'item_prec'));
         $('#mdl_ifec_registro').val($('#tabla_items').jqGrid ('getCell', id_item, 'item_fec'));
-        $("#mdl_imarca").select2("val", $('#tabla_items').jqGrid ('getCell', id_item, 'id_marca'));
-        $("#mdl_iproveedor").select2("val", $('#tabla_items').jqGrid ('getCell', id_item, 'id_proveedor'));
-        $("#mdl_ifactura").select2("val", $('#tabla_items').jqGrid ('getCell', id_item, 'id_factura'));
                 
     }else{
         mostraralertasconfoco("NO HAY NINGUN ITEM SELECCIONADO","#tabla_items");
     }
     
 })
+
+function select_marca()
+{
+    $('#id_marca').val($('#mdl_imarca').val());
+}
+
+function select_proveedor()
+{
+    $('#id_proveedor').val($('#mdl_iproveedor').val());
+}
+
+function select_factura()
+{
+    $('#id_factura').val($('#mdl_ifactura').val());
+}
 
 jQuery(document).on("click", "#btn_actualizar_item", function(){
     
@@ -215,9 +242,9 @@ jQuery(document).on("click", "#btn_actualizar_item", function(){
             serie: $('#mdl_iserie').val(),
             cantidad: $('#mdl_icantidad').val(),
             precio: $('#mdl_iprecio').val(),
-            id_proveedor: $("#mdl_iproveedor").val(),
-            id_marca: $("#mdl_imarca").val(),
-            id_factura: $("#mdl_ifactura").val(),
+            id_proveedor: $("#id_proveedor").val(),
+            id_marca: $("#id_marca").val(),
+            id_factura: $("#id_factura").val(),
             fecha: $('#mdl_ifec_registro').val(),
             tipo:1
         },
@@ -334,3 +361,14 @@ function cambiar_estado_item(id_item,estado)
         mostraralertasconfoco("NO SE PUEDE REALIZAR ESTA ACCION","#tabla_items");
     }
 }
+
+jQuery(document).on("click", "#btn_act_table_item", function(){
+    jQuery("#tabla_items").jqGrid('setGridParam', {
+        url: 'items/0?grid=items'
+    }).trigger('reloadGrid');
+    
+    $('#txt_descripcion').val('');
+    $('#txt_serie').val('');
+    $('#txt_fecha_desde').val('');
+    $('#txt_fecha_hasta').val('');
+})

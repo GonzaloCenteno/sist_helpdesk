@@ -6,9 +6,10 @@ jQuery(document).ready(function($){
         height: '450px', autowidth: true,
         toolbarfilter: true,
         sortable:false,
-        //cmTemplate: { sortable: false },
+        pgbuttons: false,
+        pgtext: null,
         colNames: ['ID', 'RAZON SOCIAL', 'RUC', 'TELEFONO', 'CONTACTO', 'ESTADO'],
-        rowNum: 10, sortname: 'pro_id', sortorder: 'desc', viewrecords: true, caption: 'LISTA DE PROVEEDORES', align: "center",
+        rowNum: 10, sortname: 'pro_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_proveedor" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE PROVEEDORES -', align: "center",
         colModel: [
             {name: 'pro_id', index: 'pro_id', align: 'left',width: 10, hidden:true},
             {name: 'pro_raz', index: 'pro_raz', align: 'left', width: 30},
@@ -263,4 +264,12 @@ jQuery(document).on("click", "#btn_buscar_proveedor", function(){
             console.log(data);
         }
     });
+})
+
+jQuery(document).on("click", "#btn_act_table_proveedor", function(){
+    jQuery("#tabla_proveedores").jqGrid('setGridParam', {
+        url: 'proveedor/0?grid=proveedores'
+    }).trigger('reloadGrid');
+    
+    $("#txt_razon_social").val('');
 })

@@ -9,8 +9,10 @@ jQuery(document).ready(function($){
         toolbarfilter: true,
         sortable:false,
         //cmTemplate: { sortable: false },
+        pgbuttons: false,
+        pgtext: null, 
         colNames: ['ID', 'TITULO', 'TIPO', 'AREA', 'PRIORIDAD', 'ESTADO', 'FECHA', 'VER TICKET'],
-        rowNum: 10, sortname: 'cabt_id', sortorder: 'desc', viewrecords: true, caption: 'LISTA DE TICKETS CREADOS', align: "center",
+        rowNum: 10, sortname: 'cabt_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_ticket_creados" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE TICKETS CREADOS -', align: "center",
         colModel: [
             {name: 'cabt_id', index: 'cabt_id', align: 'left',width: 20, hidden: true},
             {name: 'cabt_asunto', index: 'cabt_asunto', align: 'left', width: 40},
@@ -22,7 +24,10 @@ jQuery(document).ready(function($){
             {name: 'cabt_id', index: 'cabt_id', align: 'center', width: 25}
         ],
         pager: '#paginador_tabla_tickets',
-        rowList: [10, 20, 30, 40, 50],
+        rowList: [10, 20, 30, 40, 50, 100000000],
+        loadComplete: function() {
+            $("option[value=100000000]").text('TODOS');
+        },
         onSelectRow: function (Id){},
         ondblClickRow: function (Id){}
     });
@@ -43,43 +48,10 @@ jQuery(document).on("click", "#btn_buscar_datos", function(){
         return false;
     }
     
-    $.ajax({
-        url: 'ticketbuscar/0?validar=validar_tickets',
-        type: 'GET',
-        data:
-        {
-            titulo:$('#titulo').val(),
-            fecha_desde:$('#fecha_desde').val(),
-            fecha_hasta:$('#fecha_hasta').val()
-        },
-        beforeSend:function()
-        {            
-            MensajeEspera('BUSCANDO INFORMACION');  
-        },
-        success: function(data) 
-        {
-            if (data == 0) 
-            {
-                mostraralertasconfoco('NO SE ENCONTRARON REGISTROS');
-                jQuery("#tabla_tickets").jqGrid('setGridParam', {
-                    url: 'ticketbuscar/0?grid=tickets'
-                }).trigger('reloadGrid');
-            }
-            else
-            {
-                jQuery("#tabla_tickets").jqGrid('setGridParam', {
-                    url: 'ticketbuscar/0?grid=buscar_tickets&titulo='+$('#titulo').val()+'&fecha_desde='+$('#fecha_desde').val()+'&fecha_hasta='+$('#fecha_hasta').val()
-                }).trigger('reloadGrid');
-                swal.close();
-            }
-        },
-        error: function(data) {
-            mostraralertas("hubo un error, Comunicar al Administrador");
-            console.log('error');
-            console.log(data);
-        }
-    });
-        
+    jQuery("#tabla_tickets").jqGrid('setGridParam', {
+        url: 'ticketbuscar/0?grid=buscar_tickets&titulo='+$('#titulo').val()+'&fecha_desde='+$('#fecha_desde').val()+'&fecha_hasta='+$('#fecha_hasta').val()
+    }).trigger('reloadGrid');
+
 })
 
 function ver_ticket(id_ticket)
@@ -276,4 +248,92 @@ jQuery(document).on("click", "#btn_cerrar_ticket", function(){
         }, function(dismiss) {
             console.log('OPERACION CANCELADA');
         });
+})
+
+//RECHAZAR Y CAMBIAR PRIORIDAD DE TICKETS ASIGNADOS
+
+jQuery(document).on("click", "#btn_rechazar_tickets", function(){
+    
+    id_ticket = $('#tabla_tickets').jqGrid ('getGridParam', 'selrow');
+    
+    $.ajax({
+        url: 'ticketasignados/'+id_ticket+'/edit',
+        type: 'GET',
+        data:
+        {
+            tipo:3
+        },
+        beforeSend:function()
+        {            
+            MensajeEspera('ENVIANDO INFORMACION');  
+        },
+        success: function(data) 
+        {
+            if (data.respuesta == '00000') 
+            {
+                MensajeConfirmacion(data.mensaje);
+                $('#btn_cerrar_sesion').click();
+                jQuery("#tabla_tickets").jqGrid('setGridParam', {
+                    url: 'ticketbuscar/0?grid=tickets'
+                }).trigger('reloadGrid');
+            }
+            else
+            {
+                MensajeAdvertencia('NO SE PUDO OBTENER RESPUESTA');
+                console.log(data);
+            }
+//            console.log(data);
+        },
+        error: function(data) {
+            MensajeAdvertencia("hubo un error, Comunicar al Administrador");
+            console.log('error');
+            console.log(data);
+        }
+    });
+})
+
+jQuery(document).on("click", "#btn_prioridad_nuevo", function(){
+    id_ticket = $('#tabla_tickets').jqGrid ('getGridParam', 'selrow');
+    
+    $.ajax({
+        url: 'ticketasignados/'+id_ticket+'/edit',
+        type: 'GET',
+        data:
+        {
+            prioridad : $('#prioridad_nuevo').val(),
+            tipo:4
+        },
+        beforeSend:function()
+        {            
+            MensajeEspera('ENVIANDO INFORMACION');  
+        },
+        success: function(data) 
+        {
+            if (data.respuesta == '00000') 
+            {
+                MensajeConfirmacion(data.mensaje);
+            }
+            else
+            {
+                MensajeAdvertencia('NO SE PUDO OBTENER RESPUESTA');
+                console.log(data);
+            }
+//            console.log(data);
+        },
+        error: function(data) {
+            MensajeAdvertencia("hubo un error, Comunicar al Administrador");
+            console.log('error');
+            console.log(data);
+        }
+    });
+})
+
+jQuery(document).on("click", "#btn_act_table_ticket_creados", function(){
+    jQuery("#tabla_tickets").jqGrid('setGridParam', {
+        url: 'ticketbuscar/0?grid=tickets'
+    }).trigger('reloadGrid');
+    
+    $('#titulo').val('');
+    $('#fecha_desde').val('');
+    $('#fecha_hasta').val('');
 })

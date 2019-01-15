@@ -112,6 +112,23 @@
                     </div>
                 </div>
                 <hr>
+                @if(session('rol') == 1 || session('rol') == 2)
+                    <center><h4>CAMBIAR PRIORIDAD</h4></center>
+                    <div class="form-row">
+                        <div class="form-group col-md-9">
+                            <select id="prioridad_nuevo" name="prioridad_nuevo" class="form-control rounded">
+                                @foreach($prioridad as $pr)          
+                                    <option value="{{ $pr->prio_id }}">{{ $pr->prio_desc }}</option>
+                                @endforeach             
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <button type="button" class="btn btn-primary" id="btn_prioridad_nuevo">MODIFICAR</button>
+                        </div>
+                    </div>
+                    <hr>
+                @else
+                @endif
                 <center><h3>RESPUESTAS</h3></center>
                 <div class="form-row" id="detalle">
 <!--                    <div class="form-group col-md-12">
@@ -135,6 +152,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_cerrar_sesion">CERRAR VENTANA</button>
+                @if(session('rol') == 1 || session('rol') == 2)
+                    <button type="button" class="btn btn-danger" id="btn_rechazar_tickets">RECHAZAR TICKET</button>
+                @else
+                @endif
                 <button type="button" class="btn btn-primary" id="btn_responder_ticket">RESPONDER TICKET</button>
                 <button type="button" class="btn btn-success" id="btn_cerrar_ticket">CERRAR TICKET</button>
             </div>

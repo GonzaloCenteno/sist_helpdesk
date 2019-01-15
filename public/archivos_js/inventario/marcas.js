@@ -6,11 +6,11 @@ jQuery(document).ready(function($){
         height: '450px', autowidth: true,
         toolbarfilter: true,
         sortable:false,
-//        pgbuttons: false,
-//        pgtext: null,
+        pgbuttons: false,
+        pgtext: null,
         //cmTemplate: { sortable: false },
         colNames: ['ID', 'DESCRIPCION', 'ESTADO'],
-        rowNum: 10, sortname: 'mar_id', sortorder: 'desc', viewrecords: true, caption: 'LISTA DE MARCAS', align: "center",
+        rowNum: 10, sortname: 'mar_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_marca" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE MARCAS -', align: "center",
         colModel: [
             {name: 'mar_id', index: 'mar_id', align: 'left',width: 10, hidden:true},
             {name: 'mar_desc', index: 'mar_desc', align: 'left', width: 80},
@@ -238,4 +238,12 @@ jQuery(document).on("click", "#btn_buscar_marca", function(){
             console.log(data);
         }
     });
+})
+
+jQuery(document).on("click", "#btn_act_table_marca", function(){
+    jQuery("#tabla_marcas").jqGrid('setGridParam', {
+        url: 'marcas/0?grid=marcas'
+    }).trigger('reloadGrid');
+    
+    $('#descripcion_marca').val('');
 })

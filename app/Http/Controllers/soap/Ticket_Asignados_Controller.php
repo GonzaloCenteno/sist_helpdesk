@@ -17,7 +17,8 @@ class Ticket_Asignados_Controller extends BaseSoapController
             {
                 $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
                 $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                return view('tickets/vw_ticket_asignados',compact('tblmenu_men','tblmenu_men2'));
+                $prioridad = DB::table('cromohelp.tbl_prioridad')->orderBy('prio_id','asc')->get();
+                return view('tickets/vw_ticket_asignados',compact('tblmenu_men','tblmenu_men2','prioridad'));
             }
             else
             {
@@ -49,10 +50,6 @@ class Ticket_Asignados_Controller extends BaseSoapController
             {
                 return $this->crear_tabla_buscar_tickets($request);
             }
-            if ($request['validar'] == 'validar_tickets') 
-            {
-                return $this->validar_buscar_tickets($request);
-            }
         }
     }
 
@@ -74,6 +71,10 @@ class Ticket_Asignados_Controller extends BaseSoapController
         if ($request['tipo'] == 3) 
         {
             return $this->rechazar_ticket($id_ticket,$request);
+        }
+        if ($request['tipo'] == 4) 
+        {
+            return $this->cambiar_prioridad($id_ticket,$request);
         }
     }
 
@@ -202,26 +203,6 @@ class Ticket_Asignados_Controller extends BaseSoapController
                 );  
             }
             return response()->json($Lista);
-        }
-    }
-    
-    public function validar_buscar_tickets(Request $request)
-    {
-        $fecha_desde = date("d/m/Y", strtotime($request['fecha_desde']));
-        $fecha_hasta = date("d/m/Y", strtotime($request['fecha_hasta'])).' 23:59:00';
-        $validar_ticket = DB::table('cromohelp.tbl_cabticket')
-                ->where('cabt_usutec',session('usutec'))
-                ->where('cabt_asunto','like', '%'.strtoupper($request['titulo']).'%')
-                ->whereBetween('cabt_feccre', [$fecha_desde, $fecha_hasta])
-                ->where('cabt_usutec','<>',0)
-                ->whereIn('cabt_est', [1, 2, 3])->get();
-        if ($validar_ticket->count() > 0) 
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
         }
     }
     
@@ -577,5 +558,54 @@ class Ticket_Asignados_Controller extends BaseSoapController
         {
             return "EL ARCHIVO NO EXISTE, O FUE ELIMINADO";
         }
+    }
+    
+    public function cambiar_prioridad($id_ticket, Request $request)
+    {
+        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        $this->service = InstanceSoapClient::init();
+
+        $xml = new \DomDocument('1.0', 'UTF-8'); 
+        $root = $xml->createElement('CROMOHELP'); 
+        $root = $xml->appendChild($root); 
+
+        $usuarioxml = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuarioxml =$root->appendChild($usuarioxml);  
+
+        $id_ticketxml =$xml->createElement('IDTICKET',$id_ticket); 
+        $id_ticketxml =$root->appendChild($id_ticketxml); 
+        
+        $prioridadxml =$xml->createElement('PRI',$request['prioridad']); 
+        $prioridadxml =$root->appendChild($prioridadxml); 
+        
+        $xml->formatOutput = true;
+
+        $codigo = '042';
+        $trama = $xml->saveXML(); 
+        
+        //dd($trama);
+
+        $params = [
+            "cod" =>$codigo,
+            "trama" => $trama
+        ];
+        $respuesta = $this->service->consulta($params);
+        //dd($datos);
+
+        $array2 = (array) $respuesta;
+        foreach ($array2 as &$valor2) 
+        {
+            $xmlr2 = $valor2 ;
+        }
+        $final2=strlen($xmlr2)-2;
+        $xmlr2=substr($xmlr2, 1, $final2);
+        $xmlr2=$xmlr2;
+        $datos = (array) @simplexml_load_string($xmlr2);
+//        dd($datos);
+        
+        return response()->json([
+            'respuesta' => $datos['CODERR'],
+            'mensaje' => $datos['MSGERR'],
+        ]);
     }
 }

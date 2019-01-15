@@ -6,11 +6,11 @@ jQuery(document).ready(function($){
         height: '450px', autowidth: true,
         toolbarfilter: true,
         sortable:false,
-//        pgbuttons: false,
-//        pgtext: null, 
+        pgbuttons: false,
+        pgtext: null, 
         //cmTemplate: { sortable: false },
         colNames: ['ID', 'SERIE', 'NUMERO', 'MONTO', 'FECHA REGISTRO', 'ID_PRODUCTO','PRODUCTO'],
-        rowNum: 10, sortname: 'fact_id', sortorder: 'desc', viewrecords: true, caption: 'LISTA DE FACTURAS', align: "center",
+        rowNum: 10, sortname: 'fact_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_factura" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE FACTURAS - ', align: "center",
         colModel: [
             {name: 'fact_id', index: 'fact_id', align: 'left',width: 10, hidden:true},
             {name: 'fact_serie', index: 'fact_serie', align: 'center', width: 20},
@@ -61,6 +61,7 @@ jQuery(document).on("click", "#btn_nueva_factura", function(){
     $('#titulo_factura').text('CREAR NUEVA FACTURA');
     $('#btn_guardar_factura').show();
     $('#btn_actualizar_factura').hide();
+    $('#select_proveedor_f').hide();
     limpiar_datos_factura();
 })
 
@@ -137,17 +138,25 @@ jQuery(document).on("click", "#btn_modificar_factura", function(){
         $('#btn_guardar_factura').hide();
         $('#btn_actualizar_factura').show();
         
+        $('#select_proveedor_f').show();
+        $('#id_proveedor_f').val($('#tabla_facturas').jqGrid ('getCell', id_factura, 'id_producto'));
+        $('#desc_proveedor_f').text('PROVEEDOR ACTUAL: ' + $('#tabla_facturas').jqGrid ('getCell', id_factura, 'pro_id'));
+        
         $('#mdl_serie').val($('#tabla_facturas').jqGrid ('getCell', id_factura, 'fact_serie'));
         $('#mdl_numero').val($('#tabla_facturas').jqGrid ('getCell', id_factura, 'fact_num'));
         $('#mdl_monto').val($('#tabla_facturas').jqGrid ('getCell', id_factura, 'fact_monto'));
         $('#mdl_fecha').val($('#tabla_facturas').jqGrid ('getCell', id_factura, 'fact_fec'));
-        $("#mdl_producto").select2("val", $('#tabla_facturas').jqGrid ('getCell', id_factura, 'id_producto'));
                 
     }else{
         mostraralertasconfoco("NO HAY NINGUNA FACTURA SELECCIONADA","#tabla_facturas");
     }
     
 })
+
+function select_proveedor()
+{
+    $('#id_proveedor_f').val($('#mdl_producto').val());
+}
 
 jQuery(document).on("click", "#btn_actualizar_factura", function(){
     
@@ -182,7 +191,7 @@ jQuery(document).on("click", "#btn_actualizar_factura", function(){
             numero: $('#mdl_numero').val(),
             monto: $('#mdl_monto').val(),
             fecha: $('#mdl_fecha').val(),
-            id_producto: $('#mdl_producto').val()
+            id_producto: $('#id_proveedor_f').val()
         },
         beforeSend:function()
         {            
@@ -229,4 +238,14 @@ jQuery(document).on("click", "#btn_buscar_factura", function(){
         url: 'facturas/0?grid=buscar_facturas&serie_num='+$('#txt_serie_num').val()+'&fecha_desde='+$('#txt_fecha_desde').val()+'&fecha_hasta='+$('#txt_fecha_hasta').val()
     }).trigger('reloadGrid');
              
+})
+
+jQuery(document).on("click", "#btn_act_table_factura", function(){
+    jQuery("#tabla_facturas").jqGrid('setGridParam', {
+        url: 'facturas/0?grid=facturas'
+    }).trigger('reloadGrid');
+    
+    $('#txt_serie_num').val('');
+    $('#txt_fecha_desde').val('');
+    $('#txt_fecha_hasta').val('');
 })

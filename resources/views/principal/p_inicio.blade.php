@@ -226,7 +226,7 @@
 
                 <!-- ### $App Screen Footer ### -->
                 <footer class="bdT ta-c p-30 lh-0 fsz-sm c-grey-600">
-                    <span>Copyright © 2017 Designed by <a href="https://colorlib.com" target='_blank' title="Colorlib">Colorlib</a>. All rights reserved.</span>
+                    <span>Copyright © 2019 Propiedad de: <a href="https://www.cromotex.com.pe/" target='_blank' title="Colorlib">Transportes Cromotex</a>. Todos los Derechos Reservados.</span>
                 </footer>
             </div>
         </div>
