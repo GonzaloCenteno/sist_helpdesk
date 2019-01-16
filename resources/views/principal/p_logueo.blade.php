@@ -73,11 +73,11 @@
     
     <div class="peers ai-s fxw-nw h-100vh">
         <div class="d-n@sm- peer peer-greed h-100 pos-r bgr-n bgpX-c bgpY-c bgsz-cv">
-            <img src="{{asset('img/bg.jpg')}}" alt="FLOTA CROMOTEX" class="h-100">
+            <img src="{{asset('img/img_cromotex/cromotex.jpg')}}" alt="FLOTA CROMOTEX" class="h-100">
             <div class="pos-a centerXY">
-                <div class="bgc-white bdrs-50p pos-r" style='width: 120px; height: 120px;'>
+<!--                <div class="bgc-white bdrs-50p pos-r" style='width: 120px; height: 120px;'>
                     <img class="pos-a centerXY" src="{{ asset('img/logo.png') }}" alt="">
-                </div>
+                </div>-->
             </div>
         </div>
         

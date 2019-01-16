@@ -88,12 +88,13 @@
                                     <div class="peers ai-c fxw-nw">
                                         <div class="peer">
                                             <div class="logo">
-                                                <img src="{{ asset('img/logo.png') }}" alt="">
+                                                <img src="{{ asset('img/bus-home.png') }}" alt="">
                                             </div>
                                         </div>
-                                        <div class="peer peer-greed">
-                                            <h5 class="lh-1 mB-0 logo-text">CromoHelp</h5>
-                                        </div>
+                                        
+                                    </div>
+                                    <div class="peer peer-greed text-center">
+                                        <h4 class="lh-1 mB-0 logo-text">CromoHelp</h4>
                                     </div>
                                 </a>
                             </div>
@@ -183,7 +184,7 @@
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu fsz-xs">
-                                    <li>
+<!--                                    <li>
                                         <a href="" class="d-b td-n pY-5 bgcH-grey-100 c-grey-700">
                                             <i class="ti-settings mR-10"></i>
                                             <span>Setting</span>
@@ -200,7 +201,7 @@
                                             <i class="ti-email mR-10"></i>
                                             <span>Messages</span>
                                         </a>
-                                    </li>
+                                    </li>-->
                                     <li role="separator" class="divider"></li>
                                     <li>
                                         <form method="GET" action="{{ route('logout') }}">
@@ -211,6 +212,7 @@
                                             </a>
                                         </form>
                                     </li>
+                                    <li role="separator" class="divider"></li>
                                 </ul>
                             </li>
                         </ul>

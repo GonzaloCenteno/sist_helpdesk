@@ -23,7 +23,7 @@ class Ticket_Historial_Controller extends BaseSoapController
             }
             else
             {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
+                return view('errors/vw_sin_acceso',compact('tblmenu_men'));
             }
         }
         catch(\Exception $e) 

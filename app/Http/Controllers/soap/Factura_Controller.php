@@ -16,11 +16,18 @@ class Factura_Controller extends BaseSoapController
             $tblusuarios_usu = DB::table('tblusuarios_usu')->where([['ldap_id',session('id_usuario')],['sist_id',1]])->first();
             if ($tblusuarios_usu) 
             {
-                return $this->traer_datos($tblusuarios_usu->sist_id,$tblusuarios_usu->rol_id);
+                if (session('rol') == 1 || session('rol') == 2) 
+                {
+                    return $this->traer_datos($tblusuarios_usu->sist_id,$tblusuarios_usu->rol_id);
+                }
+                else
+                {
+                    return view('errors/vw_sin_permiso',compact('tblmenu_men'));
+                }
             }
             else
             {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
+                return view('errors/vw_sin_acceso',compact('tblmenu_men'));
             }
         }
         catch(\Exception $e) 

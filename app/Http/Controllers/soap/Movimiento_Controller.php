@@ -16,26 +16,33 @@ class Movimiento_Controller extends BaseSoapController
             $tblusuarios_usu = DB::table('tblusuarios_usu')->where([['ldap_id',session('id_usuario')],['sist_id',1]])->first();
             if ($tblusuarios_usu) 
             {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-
-                $items =& $this->traer_items();
-                $punto_ventas =& $this->traer_puntos_venta();
-                //dd($punto_venta);
-                if($items['CODERR']=='00000' && $punto_ventas['CODERR']=='00000')
+                if (session('rol') == 1 || session('rol') == 2) 
                 {
-                    $item = $items['ITEM'];
-                    $punto_venta = $punto_ventas['PVT'];
-                    $num_ite = $items['NUMTIC'];
-                    $num_pvt = $punto_ventas['NUMTIC'];
-                    return view('inventario/vw_movimiento',compact('tblmenu_men','tblmenu_men2','item','punto_venta','num_ite','num_pvt'));
-                }
+                    $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
+                    $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
 
-                echo "HUBO UN ERROR TRAENDO LOS DATOS";
+                    $items =& $this->traer_items();
+                    $punto_ventas =& $this->traer_puntos_venta();
+                    //dd($punto_venta);
+                    if($items['CODERR']=='00000' && $punto_ventas['CODERR']=='00000')
+                    {
+                        $item = $items['ITEM'];
+                        $punto_venta = $punto_ventas['PVT'];
+                        $num_ite = $items['NUMTIC'];
+                        $num_pvt = $punto_ventas['NUMTIC'];
+                        return view('inventario/vw_movimiento',compact('tblmenu_men','tblmenu_men2','item','punto_venta','num_ite','num_pvt'));
+                    }
+
+                    echo "HUBO UN ERROR TRAENDO LOS DATOS";
+                }
+                else
+                {
+                    return view('errors/vw_sin_permiso',compact('tblmenu_men'));
+                }
             }
             else
             {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
+                return view('errors/vw_sin_acceso',compact('tblmenu_men'));
             }
         }
         catch(\Exception $e) 

@@ -17,13 +17,20 @@ class Marca_Controller extends BaseSoapController
             $tblusuarios_usu = DB::table('tblusuarios_usu')->where([['ldap_id',session('id_usuario')],['sist_id',1]])->first();
             if ($tblusuarios_usu) 
             {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                return view('inventario/vw_marcas',compact('tblmenu_men','tblmenu_men2'));
+                if (session('rol') == 1 || session('rol') == 2) 
+                {
+                    $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
+                    $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+                    return view('inventario/vw_marcas',compact('tblmenu_men','tblmenu_men2'));
+                }
+                else
+                {
+                    return view('errors/vw_sin_permiso',compact('tblmenu_men'));
+                }
             }
             else
             {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
+                return view('errors/vw_sin_acceso',compact('tblmenu_men'));
             }
         }
         catch(\Exception $e) 
