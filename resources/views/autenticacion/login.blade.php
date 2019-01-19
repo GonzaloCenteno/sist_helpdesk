@@ -26,5 +26,8 @@
             
         </div>
     </div>
+    <div class="form-group">
+        <h3 class="text-danger"><b>{!! Session::has('msg') ? Session::get("msg") : '' !!}</b></h3>
+    </div>
 </form>
 @endsection

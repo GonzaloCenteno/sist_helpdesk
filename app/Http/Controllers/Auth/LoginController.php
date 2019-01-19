@@ -29,14 +29,22 @@ class LoginController extends Controller
                 if ($validar->count() > 0) 
                 {
                     $rol = DB::table('tblusuarios_usu')->where('ldap_id',$datos[0]->id_usuario)->where('sist_id',1)->first();
-                    $punto_venta = DB::table('cromohelp.tbl_pvt')->where('pvt_id',$validar[0]->log_idpvt)->first();
-                    session(['id_usuario'=>$datos[0]->id_usuario]);
-                    session(['usutec'=>$rol->usu_id]);
-                    session(['nombre_usuario'=>$datos[0]->nombre_usuario]);
-                    session(['rol'=>$rol->rol_id]);
-                    session(['id_pvt'=>$validar[0]->log_idpvt]);
-                    session(['desc_pvt'=>$punto_venta->pvt_desc]);
-                    return redirect('dashboard');
+                    if ($rol) 
+                    {
+                        $punto_venta = DB::table('cromohelp.tbl_pvt')->where('pvt_id',$validar[0]->log_idpvt)->first();
+                        session(['id_usuario'=>$datos[0]->id_usuario]);
+                        session(['usutec'=>$rol->usu_id]);
+                        session(['nombre_usuario'=>$datos[0]->nombre_usuario]);
+                        session(['rol'=>$rol->rol_id]);
+                        session(['id_pvt'=>$validar[0]->log_idpvt]);
+                        session(['desc_pvt'=>$punto_venta->pvt_desc]);
+                        return redirect('dashboard');
+                    }
+                    else
+                    {
+                        session()->flash('msg', 'EL USUARIO NO TIENE PERMISOS PARA INGRESAR A ESTE SISTEMA');
+                        return redirect()->back();
+                    }
                 }
                 else
                 {

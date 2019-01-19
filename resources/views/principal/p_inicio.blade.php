@@ -88,7 +88,7 @@
                                     <div class="peers ai-c fxw-nw">
                                         <div class="peer">
                                             <div class="logo">
-                                                <img src="{{ asset('img/bus-home.png') }}" alt="">
+                                                <img src="{{ asset('img/cromohelp/logo.png') }}" alt="" style="width:265px">
                                             </div>
                                         </div>
                                         
@@ -220,7 +220,7 @@
                 </div>
 
                 <!-- ### $App Screen Content ### -->
-                <main class='main-content bgc-grey-100'>
+                <main class='main-content bgc-grey-100' style="background-image:url('{{ asset('img/cromohelp/modelo2.jpg') }}');">
                     <div id='mainContent'>
                         @yield('content')
                     </div>
