@@ -10,23 +10,27 @@ use Pusher\Pusher;
 class Ticket_Nuevo_Controller extends BaseSoapController
 {
     private $service;
-    public function index()
+    public function index(Request $request)
     {
-        try 
+        if ($request->session()->has('id_usuario'))
         {
-            $tblusuarios_usu = DB::table('tblusuarios_usu')->where([['ldap_id',session('id_usuario')],['sist_id',1]])->first();
-            if ($tblusuarios_usu) 
+            $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
+            $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+            
+            $datos =& $this->traer_datos();
+            if($datos['CODERR']=='00000')
             {
-                return $this->traer_datos($tblusuarios_usu->sist_id,$tblusuarios_usu->rol_id);
+                $numtip = $datos['NUMTIP'];
+                $numare = $datos['NUMARE'];
+                $numpri = $datos['NUMPRI'];
+                return view('tickets/vw_ticket_nuevo',compact('tblmenu_men','tblmenu_men2','numtip','numare','numpri','datos'));
             }
-            else
-            {
-                return view('errors/vw_sin_acceso',compact('tblmenu_men'));
-            }
+
+            echo "HUBO UN ERROR TRAENDO LOS DATOS"; 
         }
-        catch(\Exception $e) 
+        else
         {
-            return $e->getMessage();
+            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
         }
     }
 
@@ -169,10 +173,8 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         }
     }
     
-    public function traer_datos($sist_id,$rol_id)
+    public function &traer_datos()
     {
-        $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-        $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
         self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
         $this->service = InstanceSoapClient::init();
 
@@ -183,7 +185,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         $usuariox = $xml->createElement('USER',session('nombre_usuario')); 
         $usuariox =$root->appendChild($usuariox);  
 
-        $ipx=$xml->createElement('NIVEL',$rol_id); 
+        $ipx=$xml->createElement('NIVEL',session('rol')); 
         $ipx =$root->appendChild($ipx); 
 
         $xml->formatOutput = true;
@@ -205,14 +207,8 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         $final2=strlen($xmlr2)-2;
         $xmlr2=substr($xmlr2, 1, $final2);
         $xmlr2=$xmlr2;
-        $datos = simplexml_load_string($xmlr2);
-
-        if($datos->CODERR[0]=='00000')
-        {
-            $numtip = $datos->NUMTIP[0];
-            $numare = $datos->NUMARE[0];
-            $numpri = $datos->NUMPRI[0];
-        }
-        return view('tickets/vw_ticket_nuevo',compact('tblmenu_men','tblmenu_men2','numtip','numare','numpri','datos'));
+        $datos = (array) @simplexml_load_string($xmlr2);
+        
+        return $datos;
     }
 }

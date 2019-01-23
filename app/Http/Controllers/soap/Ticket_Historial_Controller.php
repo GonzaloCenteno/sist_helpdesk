@@ -10,25 +10,17 @@ Use Redirect;
 class Ticket_Historial_Controller extends BaseSoapController
 {
     private $service;
-    public function index()
+    public function index(Request $request)
     {
-        try 
+        if ($request->session()->has('id_usuario'))
         {
-            $tblusuarios_usu = DB::table('tblusuarios_usu')->where([['ldap_id',session('id_usuario')],['sist_id',1]])->first();
-            if ($tblusuarios_usu) 
-            {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                return view('tickets/vw_ticket_historial',compact('tblmenu_men','tblmenu_men2'));
-            }
-            else
-            {
-                return view('errors/vw_sin_acceso',compact('tblmenu_men'));
-            }
+            $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
+            $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+            return view('tickets/vw_ticket_historial',compact('tblmenu_men','tblmenu_men2'));
         }
-        catch(\Exception $e) 
+        else
         {
-            return $e->getMessage();
+            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
         }
     }
 

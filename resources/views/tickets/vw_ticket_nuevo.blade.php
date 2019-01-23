@@ -18,7 +18,7 @@
                             <select id="cbxtipo" name="cbxtipo" class="form-control rounded">
                                 <option selected value="0">..:: SELECCIONAR UN TIPO ::..</option>
                                 @for ($x = 0; $x < $numtip; $x++)          
-                                <option value="{{ $datos->TIPO[0]->IDTIP[$x] }}">{{ $datos->TIPO[0]->DESTIP[$x] }}</option>
+                                <option value="{{ $datos['TIPO']->IDTIP[$x] }}">{{ $datos['TIPO']->DESTIP[$x] }}</option>
                                 @endfor             
                             </select>
                         </div>
@@ -27,7 +27,7 @@
                             <select id="cbxarea" name="cbxarea" class="form-control rounded">
                                 <option selected value="0">..:: SELECCIONAR UN AREA ::..</option>
                                 @for ($x = 0; $x < $numare; $x++)          
-                                <option value="{{ $datos->AREA[0]->IDAREA[$x] }}">{{ $datos->AREA[0]->DESAREA[$x] }}</option>
+                                <option value="{{ $datos['AREA']->IDAREA[$x] }}">{{ $datos['AREA']->DESAREA[$x] }}</option>
                                 @endfor 
                             </select>
                         </div>
@@ -38,7 +38,7 @@
                             <select id="cbxpri" name="cbxpri" class="form-control rounded">
                                 <option selected value="0">..:: SELECCIONAR UNA PRIORIDAD ::..</option>
                                 @for ($x = 0; $x < $numpri; $x++)          
-                                <option value="{{ $datos->PRIORIDAD[0]->IDPRI[$x] }}">{{ $datos->PRIORIDAD[0]->DESPRI[$x] }}</option>
+                                <option value="{{ $datos['PRIORIDAD']->IDPRI[$x] }}">{{ $datos['PRIORIDAD']->DESPRI[$x] }}</option>
                                 @endfor 
                             </select>
                         </div>

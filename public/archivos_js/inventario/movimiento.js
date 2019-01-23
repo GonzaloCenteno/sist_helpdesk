@@ -9,7 +9,7 @@ jQuery(document).ready(function($){
         pgbuttons: false,
         pgtext: null,
         //cmTemplate: { sortable: false },
-        colNames: ['ID', 'IDITEM', 'ITEM', 'IDPVT_O', 'PUNTO VENTA ORIGEN', 'IDPVT_D','PUNTO VENTA DESTINO', 'IDUSUARIO', 'USUARIO', 'FECHA', 'ESTADO'],
+        colNames: ['ID', 'IDITEM', 'ITEM', 'IDPVT_O', 'PUNTO VENTA ORIGEN', 'IDPVT_D','PUNTO VENTA DESTINO', 'USUARIO', 'ID_USUARIO', 'FECHA', 'ESTADO'],
         rowNum: 10, sortname: 'mov_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_movimiento" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE MOVIMIENTOS -', align: "center",
         colModel: [
             {name: 'mov_id', index: 'mov_id', align: 'left',width: 10, hidden:true},
@@ -19,8 +19,8 @@ jQuery(document).ready(function($){
             {name: 'pvt_ori', index: 'pvt_ori', align: 'left', width: 17},
             {name: 'id_pvt_des', index: 'id_pvt_des', align: 'left', width: 20, hidden:true},
             {name: 'pvt_des', index: 'pvt_des', align: 'left', width: 17},
-            {name: 'id_usuario', index: 'id_usuario', align: 'left', width: 20, hidden:true},
-            {name: 'usu_id', index: 'usu_id', align: 'left', width: 15},
+            {name: 'usu_id', index: 'usu_id', align: 'left', width: 20},
+            {name: 'id_usuario', index: 'id_usuario', align: 'left', width: 15,hidden:true},
             {name: 'mov_fec', index: 'mov_fec', align: 'center', width: 10},
             {name: 'mov_est', index: 'mov_est', align: 'center', width: 10}
         ],

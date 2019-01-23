@@ -94,7 +94,7 @@
                                         
                                     </div>
                                     <div class="peer peer-greed text-center">
-                                        <h4 class="lh-1 mB-0 logo-text">CromoHelp</h4>
+                                        <h4 class="lh-1 mB-0 logo-text">CromoAyuda</h4>
                                     </div>
                                 </a>
                             </div>
@@ -180,7 +180,7 @@
                                         <img class="w-2r bdrs-50p" src="https://randomuser.me/api/portraits/men/10.jpg" alt="">
                                     </div>
                                     <div class="peer">
-                                        <span class="fsz-sm c-grey-900">{{ session('nombre_usuario') }}</span>
+                                        <span class="fsz-sm c-grey-900">{{ session('nomb_usuario') }}</span>
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu fsz-xs">
@@ -261,12 +261,11 @@
                 window.location.hash = "";
             }
         }
-        ;
+        
         </script>
 
         <script>
-            var variable = {!! session('rol') !!}
-            ;
+            var variable = {!! session('rol') !!};
             //alert(variable);
             var pusher = new Pusher('d8966da1d9f626630fe1', {
                 cluster: 'us2',

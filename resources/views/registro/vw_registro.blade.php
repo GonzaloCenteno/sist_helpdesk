@@ -79,14 +79,14 @@
             {
                 if(data == 0)
                 {
-                    MensajeAdvertencia('EL USUARIO NO EXISTE');
+                    MensajeAdvertencia('DATOS ERRONEOS');
                     $('#usu_reg').val('');
                     $('#pass_reg').val('');
                     $('#usu_reg').focus();
                 }
                 else if(data == 'error')
                 {
-                    MensajeAdvertencia('CONTRASEÑA INCORRECTA');
+                    MensajeAdvertencia('EL USUARIO NO TIENE LOS PERMISOS ADECUADOS');
                     $('#pass_reg').val('');
                     $('#pass_reg').focus();
                 }

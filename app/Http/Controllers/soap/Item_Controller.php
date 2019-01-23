@@ -10,48 +10,40 @@ use Validator;
 class Item_Controller extends BaseSoapController
 {
     private $service;
-    public function index()
+    public function index(Request $request)
     {
-        try 
+        if ($request->session()->has('id_usuario'))
         {
-            $tblusuarios_usu = DB::table('tblusuarios_usu')->where([['ldap_id',session('id_usuario')],['sist_id',1]])->first();
-            if ($tblusuarios_usu) 
+            if (session('rol') == 1 || session('rol') == 2) 
             {
-                if (session('rol') == 1 || session('rol') == 2) 
+                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
+                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+                
+                $proveedores =& $this->traer_proveedores();
+                $marcas =& $this->traer_marcas();
+                $facturas =& $this->traer_facturas();
+                //dd($marcas);
+                if($proveedores['CODERR']=='00000' && $marcas['CODERR']=='00000' && $facturas['CODERR']=='00000')
                 {
-                    $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                    $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$tblusuarios_usu->sist_id],['menu_rol',$tblusuarios_usu->rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-
-                    $proveedores =& $this->traer_proveedores();
-                    $marcas =& $this->traer_marcas();
-                    $facturas =& $this->traer_facturas();
-                    //dd($marcas);
-                    if($proveedores['CODERR']=='00000' && $marcas['CODERR']=='00000' && $facturas['CODERR']=='00000')
-                    {
-                        $proveedor = $proveedores['PROVEEDOR'];
-                        $marca = $marcas['MARCA'];
-                        $factura = $facturas['FACTURA'];
-                        $num_pro = $proveedores['NUMTIC'];
-                        $num_mar = $marcas['NUMTIC'];
-                        $num_fac = $facturas['NUMTIC'];
-                        return view('inventario/vw_item',compact('tblmenu_men','tblmenu_men2','proveedor','marca','factura','num_pro','num_mar','num_fac'));
-                    }
-
-                    echo "HUBO UN ERROR TRAENDO LOS DATOS";
+                    $proveedor = $proveedores['PROVEEDOR'];
+                    $marca = $marcas['MARCA'];
+                    $factura = $facturas['FACTURA'];
+                    $num_pro = $proveedores['NUMTIC'];
+                    $num_mar = $marcas['NUMTIC'];
+                    $num_fac = $facturas['NUMTIC'];
+                    return view('inventario/vw_item',compact('tblmenu_men','tblmenu_men2','proveedor','marca','factura','num_pro','num_mar','num_fac'));
                 }
-                else
-                {
-                    return view('errors/vw_sin_permiso',compact('tblmenu_men'));
-                }
+
+                echo "HUBO UN ERROR TRAENDO LOS DATOS";
             }
             else
             {
-                return view('errors/vw_sin_acceso',compact('tblmenu_men'));
-            }
+                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
+            }     
         }
-        catch(\Exception $e) 
+        else
         {
-            return $e->getMessage();
+            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
         }
     }
 

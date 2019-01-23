@@ -16,47 +16,67 @@ class LoginController extends Controller
             'password' => 'required|string',
         ]);
         
-        $datos = DB::table('tblldap_ldap')->where('nombre_usuario',$request['usuario'])->get();
-        if ($datos->count() > 0) 
+        $ldap_con = ldap_connect("cromotex.com.pe",389)or die ("NO SE PUDO CONECTAR CON EL SERVIDOR");
+        $ldap_dn = "DC=cromotex,DC=com,DC=pe";
+        $usuario = $request['usuario'];
+        $password = $request['password'];
+        ldap_set_option($ldap_con, LDAP_OPT_PROTOCOL_VERSION, 3);
+        ldap_set_option($ldap_con, LDAP_OPT_REFERRALS, 0);
+        
+        if (@ldap_bind($ldap_con, $usuario."@cromotex.com.pe", $password)) 
         {
-            $ldap_con = ldap_connect("cromotex.com.pe",389) or die ("NO SE PUDO CONECTAR CON EL SERVIDOR");
-
-            ldap_set_option($ldap_con, LDAP_OPT_PROTOCOL_VERSION, 3);
-            
-            if (@ldap_bind($ldap_con, $datos[0]->dn, $request['password'])) 
+            $filtro = "(cn=$usuario)";
+            $busqueda = @ldap_search($ldap_con,$ldap_dn, $filtro) or exit("NO SE PUDO CONECTAR");
+            $entradas = @ldap_get_entries($ldap_con, $busqueda);
+            if ($entradas["count"] > 0) 
             {
-                $validar = DB::table('cromohelp.tbl_login')->where('log_idusu',$datos[0]->id_usuario)->get();
-                if ($validar->count() > 0) 
+                for ($i=0; $i<$entradas["count"]; $i++) 
                 {
-                    $rol = DB::table('tblusuarios_usu')->where('ldap_id',$datos[0]->id_usuario)->where('sist_id',1)->first();
-                    if ($rol) 
+                    $departamento = isset($entradas[$i]["department"][0]) ? $entradas[$i]["department"][0] : "0;0";
+                    $rol = isset($entradas[$i]["title"][0]) ? $entradas[$i]["title"][0] : "0;0";
+                    $user_cn = isset($entradas[$i]["cn"][0]) ? $entradas[$i]["cn"][0] : "-";
+                    $nomb_usu = isset($entradas[$i]["displayname"][0]) ? $entradas[$i]["displayname"][0] : "-";
+                }           
+                $array_dep = explode(";", $departamento);
+                $array_rol = explode(";", $rol);
+                //print_r($array_rol);
+                $indice = array_search(1,$array_dep);
+                //var_export($indice);
+                if($indice === false)
+                {
+                    session()->flash('msg', 'NO TIENE ACCESO PARA ESTE SISTEMA');
+                    return redirect()->back();
+                } 
+                else
+                {
+                    $validar = DB::table('cromohelp.tbl_login')->where('log_idusu',$user_cn)->get();
+                    if ($validar->count() > 0) 
                     {
                         $punto_venta = DB::table('cromohelp.tbl_pvt')->where('pvt_id',$validar[0]->log_idpvt)->first();
-                        session(['id_usuario'=>$datos[0]->id_usuario]);
-                        session(['usutec'=>$rol->usu_id]);
-                        session(['nombre_usuario'=>$datos[0]->nombre_usuario]);
-                        session(['rol'=>$rol->rol_id]);
+                        //$menu = DB::table('tblmenu_men')->select('menu_rut','menu_desc')->where([['menu_sist',$array_dep[$indice]],['menu_rol',$array_rol[$indice]],['menu_est',1],['menu_niv',1]])->get();
+                        //dd($menu);
+                        session(['id_usuario'=>$user_cn]);
+                        session(['nomb_usuario'=>$nomb_usu]);
+                        //session(['usutec'=>$array_rol[$indice]]);
+                        session(['nombre_usuario'=>$user_cn]);
+                        session(['rol'=>$array_rol[$indice]]);
                         session(['id_pvt'=>$validar[0]->log_idpvt]);
                         session(['desc_pvt'=>$punto_venta->pvt_desc]);
+                        session(['menu_sist'=>$array_dep[$indice]]);
+                        session(['menu_rol'=>$array_rol[$indice]]);
                         return redirect('dashboard');
                     }
                     else
                     {
-                        session()->flash('msg', 'EL USUARIO NO TIENE PERMISOS PARA INGRESAR A ESTE SISTEMA');
-                        return redirect()->back();
+                        session(['id'=>$user_cn]);
+                        return redirect('registro');
                     }
                 }
-                else
-                {
-                    session(['id'=>$datos[0]->id_usuario]);
-                    return redirect('registro');
-                }   
             }
             else
             {
-                return back()
-                ->withErrors(['password' => trans('auth.failed')])
-                ->withInput(request(['usuario'])); 
+                session()->flash('msg', 'EL USUARIO NO TIENE PERMISOS');
+                return redirect()->back();
             }
         }
         else
@@ -65,6 +85,7 @@ class LoginController extends Controller
                 ->withErrors(['password' => trans('auth.failed')])
                 ->withInput(request(['usuario'])); 
         }
+        
     }
     
     public function logout()
