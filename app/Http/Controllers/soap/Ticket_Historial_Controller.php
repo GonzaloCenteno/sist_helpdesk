@@ -16,7 +16,8 @@ class Ticket_Historial_Controller extends BaseSoapController
         {
             $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
             $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-            return view('tickets/vw_ticket_historial',compact('tblmenu_men','tblmenu_men2'));
+            $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
+            return view('tickets/vw_ticket_historial',compact('tblmenu_men','tblmenu_men2','tblmenu_men3'));
         }
         else
         {

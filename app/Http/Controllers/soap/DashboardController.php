@@ -14,6 +14,7 @@ class DashboardController extends BaseSoapController
         {
             $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
             $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+            $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
             
             $datos =& $this->recuperar_datos();
             if($datos['CODERR']=='00000')
@@ -22,7 +23,7 @@ class DashboardController extends BaseSoapController
                 $aperturados = $datos['TOTRES'];
                 $proceso = $datos['TOTPRO'];
                 $finalizado = $datos['TOTNOR'];
-                return view('dashboard/vw_dashboard',compact('tblmenu_men','tblmenu_men2','total','aperturados','proceso','finalizado'));
+                return view('dashboard/vw_dashboard',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','total','aperturados','proceso','finalizado'));
             }
 
             echo "HUBO UN ERROR TRAENDO LOS DATOS"; 

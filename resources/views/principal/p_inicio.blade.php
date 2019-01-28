@@ -8,7 +8,7 @@
         <!-- CSRF Token -->
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>DASHBOARD</title>
+        <title>CROMOAYUDA</title>
 
         <link rel="icon" type="image/png" href="{{ asset('img/bus-home.png') }}" />
 
@@ -145,6 +145,37 @@
                                                 <i class="c-blue-500 ti-menu"></i>
                                             </span>
                                             <span class="title">{{ $menu2->menu_desc }}</span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @else
+                            @endif
+                                    </ul>
+                                </li>    
+                        @else
+                        @endif
+                        
+                        @if(session('rol') == 1 || session('rol') == 2)  
+                        <hr>
+                            @if(isset($tblmenu_men3))  
+                                <li class="nav-item dropdown">
+                                <a class="dropdown-toggle" href="javascript:void(0);">
+                                    <span class="icon-holder">
+                                        <i class="c-blue-500 ti-layout-list-thumb"></i>
+                                    </span>
+                                    <span class="title">Encuesta</span>
+                                    <span class="arrow">
+                                        <i class="ti-angle-right"></i>
+                                    </span>
+                                </a>
+                                    <ul class="dropdown-menu">
+                                @foreach($tblmenu_men3 as $menu3)
+                                    <li>
+                                        <a class='sidebar-link' href="{{ $menu3->menu_rut }}">
+                                            <span class="icon-holder">
+                                                <i class="c-blue-500 ti-menu"></i>
+                                            </span>
+                                            <span class="title">{{ $menu3->menu_desc }}</span>
                                         </a>
                                     </li>
                                 @endforeach

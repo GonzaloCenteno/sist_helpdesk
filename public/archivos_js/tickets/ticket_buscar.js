@@ -1,6 +1,7 @@
 jQuery(document).ready(function($){
     
     CKEDITOR.replace('mdl_nueva_descripcion');
+    CKEDITOR.replace('mdl_nueva_respuesta');
     
     jQuery("#tabla_tickets").jqGrid({
         url: 'ticketbuscar/0?grid=tickets',
@@ -185,69 +186,6 @@ jQuery(document).on("click", "#btn_responder_ticket" ,function(){
             console.log(data);
         }
     });
-})
-
-jQuery(document).on("click", "#btn_cerrar_ticket", function(){
-    
-    id_ticket = $('#tabla_tickets').jqGrid ('getGridParam', 'selrow');
-    
-    swal({
-       title: '¿ESTA SEGURO DE QUERER CERRAR ESTE TICKET?',
-       text: "EL TICKET PASARA A ESTADO FINALIZADO...",
-       type: 'warning',
-       showCancelButton: true,
-       confirmButtonColor: '#3085d6',
-       cancelButtonColor: '#d33',
-       cancelButtonText: 'CANCELAR',
-       confirmButtonText: 'ACEPTAR',
-       confirmButtonClass: 'btn btn-success',
-       cancelButtonClass: 'btn btn-danger',
-       buttonsStyling: false,
-       reverseButtons: true,
-       allowOutsideClick: false,
-        allowEscapeKey:false,
-        allowEnterKey:false
-     }).then(function(result) {
-            $.ajax({
-                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                url: 'ticketbuscar/'+id_ticket+'/edit',
-                type: 'GET',
-                data:
-                {
-                    respuesta:'EL USUARIO CERRO ESTE TICKET',
-                    tipo:2
-                },
-                success: function(data) 
-                {
-                    if (data == '00000') 
-                    {
-                        $('#btn_cerrar_sesion').click();
-                        MensajeConfirmacion('EL TICKET FUE CERRADO');
-                        jQuery("#tabla_tickets").jqGrid('setGridParam', {
-                            url: 'ticketbuscar/0?grid=tickets'
-                        }).trigger('reloadGrid');
-                        CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
-                    }
-                    else if (data == '90006') 
-                    {
-                        MensajeAdvertencia('PRIMERO DEBES ASIGNAR EL TICKET A UNA PERSONA');
-                        CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
-                    }
-                    else
-                    {
-                        MensajeAdvertencia('NO SE PUDO ENVIAR LA RESPUESTA');
-                        console.log(data);
-                    }
-                },
-                error: function(data) {
-                    MensajeAdvertencia("hubo un error, Comunicar al Administrador");
-                    console.log('error');
-                    console.log(data);
-                }
-            });
-        }, function(dismiss) {
-            console.log('OPERACION CANCELADA');
-        });
 })
 
 //RECHAZAR Y CAMBIAR PRIORIDAD DE TICKETS ASIGNADOS

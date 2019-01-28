@@ -34,6 +34,9 @@ Route::group(['namespace' => 'soap'], function()
     Route::resource('facturas', 'Factura_Controller');
     Route::resource('items', 'Item_Controller');
     Route::resource('movimientos', 'Movimiento_Controller');
+    
+    Route::resource('valores', 'Valores_Controller');
+    Route::resource('preguntas', 'Preguntas_Controller');
 });
 
 

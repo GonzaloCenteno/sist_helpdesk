@@ -41,6 +41,34 @@ function MensajeConfirmacion(texto){
       )
 }
 
+function alertaArchivo(texto)
+{
+    let timerInterval
+    swal({
+      type: 'warning',
+      title: texto,
+      timer: 1200,
+      allowOutsideClick: false,
+      allowEscapeKey:false,
+      allowEnterKey:false,
+      showConfirmButton: false,
+      onOpen: () => {
+        timerInterval = setInterval(() => {
+        }, 100)
+      },
+      onClose: () => {
+        clearInterval(timerInterval)
+      }
+    }).then(
+        function () {},
+        function (dismiss) {
+          if (dismiss === 'timer') {
+            console.log('I was closed by the timer')
+          }
+        }
+      )
+}
+
 function MensajeAdvertencia(texto){
     swal({
       type: 'info',
@@ -64,6 +92,7 @@ function MensajeEspera(texto){
         allowOutsideClick: false,
         allowEscapeKey:false,
         allowEnterKey:false,
+        showConfirmButton: false,
         onOpen: function () {
           swal.showLoading()
         }

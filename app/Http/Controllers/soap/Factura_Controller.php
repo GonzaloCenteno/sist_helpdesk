@@ -178,6 +178,7 @@ class Factura_Controller extends BaseSoapController
     {
         $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
         $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+        $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
         self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
         $this->service = InstanceSoapClient::init();
 
@@ -217,7 +218,7 @@ class Factura_Controller extends BaseSoapController
             $proveedor = $datos['PROVEEDOR'];
             $num = $datos['NUMTIC'];
             //dd($proveedor->IDPRO);
-            return view('inventario/vw_factura',compact('tblmenu_men','tblmenu_men2','proveedor','num'));
+            return view('inventario/vw_factura',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','proveedor','num'));
         }
         
         echo "HUBO UN ERROR TRAENDO LOS DATOS DEL PROVEEDOR";

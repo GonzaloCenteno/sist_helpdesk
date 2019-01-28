@@ -100,7 +100,7 @@ jQuery(document).on("click", "#btn_guardar_marca", function(){
     
 })
 
-jQuery(document).on("click", "#btn_modificar_marca", function(){
+jQuery(document).on("click", "#btn_modificar_valor", function(){
     
     id_marca = $('#tabla_marcas').jqGrid ('getGridParam', 'selrow');
     

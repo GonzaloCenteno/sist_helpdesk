@@ -4,8 +4,10 @@ namespace App\Http\Controllers\soap;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Tbl_preguntas;
+use Validator;
 
-class Ticket_Asignar_Controller extends BaseSoapController
+class Preguntas_Controller extends BaseSoapController
 {
     private $service;
     public function index(Request $request)
@@ -17,7 +19,7 @@ class Ticket_Asignar_Controller extends BaseSoapController
                 $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
                 $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
                 $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-                return view('tickets/vw_ticket_asignar',compact('tblmenu_men','tblmenu_men2','tblmenu_men3'));
+                return view('encuesta/vw_preguntas',compact('tblmenu_men','tblmenu_men2','tblmenu_men3'));
             }
             else
             {
@@ -34,27 +36,18 @@ class Ticket_Asignar_Controller extends BaseSoapController
     {
         if ($id > 0) 
         {
-           
+            
         }
         else
         {
-            if ($request['grid'] == 'asignar_tickets') 
+            if ($request['grid'] == 'preguntas') 
             {
-                return $this->crear_tabla_asignar_tickets($request);
-            }
-            if ($request['datos'] == 'traer_personal')
-            {
-                return $this->traer_datos_personal($request);
+                return $this->crear_tabla_preguntas($request);
             }
         }
     }
 
     public function create(Request $request)
-    {
-    
-    }
-
-    public function edit($id_ticket,Request $request)
     {
         self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
         $this->service = InstanceSoapClient::init();
@@ -63,21 +56,15 @@ class Ticket_Asignar_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USER',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
-        $rolxml = $xml->createElement('NIVEL',session('rol'));
-        $rolxml =$root->appendChild($rolxml);
-        
-        $idticketxml = $xml->createElement('IDTICKET',$id_ticket);
-        $idticketxml =$root->appendChild($idticketxml);
-        
-        $idtecnicoxml = $xml->createElement('IDUSUARIO',$request['id_tecnico']);
-        $idtecnicoxml =$root->appendChild($idtecnicoxml);
+        $desxml = $xml->createElement('DES', strtoupper($request['descripcion']));
+        $desxml =$root->appendChild($desxml);
 
         $xml->formatOutput = true;
 
-        $codigo = '014';
+        $codigo = '046';
         $trama = $xml->saveXML();
         //dd($trama);
 
@@ -105,6 +92,18 @@ class Ticket_Asignar_Controller extends BaseSoapController
         ]);
     }
 
+    public function edit($id_pregunta,Request $request)
+    {
+        if ($request['tipo'] == 1) 
+        {
+            return $this->modificar_datos_pregunta($id_pregunta, $request);
+        }
+        if ($request['tipo'] == 2) 
+        {
+            return $this->editar_estado_pregunta($id_pregunta, $request);
+        }
+    }
+
     public function destroy(Request $request)
     {
         
@@ -115,7 +114,7 @@ class Ticket_Asignar_Controller extends BaseSoapController
         
     }
     
-    public function crear_tabla_asignar_tickets(Request $request)
+    public function crear_tabla_preguntas(Request $request)
     {
         header('Content-type: application/json');
         $page = $_GET['page'];
@@ -137,8 +136,8 @@ class Ticket_Asignar_Controller extends BaseSoapController
             $usuariox = $xml->createElement('USU',session('nombre_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolx = $xml->createElement('NIVEL',session('rol'));
-            $rolx =$root->appendChild($rolx);
+            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml =$root->appendChild($rolxml);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
             $orderby1 =$root->appendChild($orderby1);  
@@ -154,7 +153,7 @@ class Ticket_Asignar_Controller extends BaseSoapController
 
             $xml->formatOutput = true;
 
-            $codigo = '008';
+            $codigo = '048';
             $trama = $xml->saveXML();
             //dd($trama);
 
@@ -174,7 +173,7 @@ class Ticket_Asignar_Controller extends BaseSoapController
             $xmlr2=substr($xmlr2, 1, $final2);
             $xmlr2=$xmlr2;
             $datos = (array) @simplexml_load_string($xmlr2);
-            //dd($datos);
+            //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
             
@@ -196,16 +195,16 @@ class Ticket_Asignar_Controller extends BaseSoapController
         
         if ($datos['NUMTIC'] == 1) 
         {
-            $Lista->rows[0]['id'] = (integer)$datos['TICKETS']->IDTIC;
+            $Lista->rows[0]['id'] = (integer)$datos['PREGUNTA']->IDPRE;
+            if ($datos['PREGUNTA']->IDEST == 5) {
+                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$datos['PREGUNTA']->IDPRE).',6)"><i class="fa fa-check"></i> '.$datos['PREGUNTA']->ESTPRE.'</button>';
+            }else{
+                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$datos['PREGUNTA']->IDPRE).',5)"><i class="fa fa-times"></i> '.$datos['PREGUNTA']->ESTPRE.'</button>'; 
+            }
             $Lista->rows[0]['cell'] = array(
-                trim((integer)$datos['TICKETS']->IDTIC),
-                    trim($datos['TICKETS']->TICASU),
-                    trim($datos['TICKETS']->TICTDE),
-                    trim($datos['TICKETS']->TICADE),
-                    trim($datos['TICKETS']->TICCPR),
-                    trim($datos['TICKETS']->TICDES),
-                    trim(date("d/m/Y", strtotime($datos['TICKETS']->TICFEC))),
-                    '<button class="btn btn-success btn-lg" data-toggle="modal" data-target="#Modal_Asignar_Ticket" data-backdrop="static" data-keyboard="false" type="button" onclick="asignar_ticket('.trim((integer)$datos['TICKETS']->IDTIC).')"><i class="fa fa-check-square-o"></i> ASIGNAR TICKET</button>'
+                trim((integer)$datos['PREGUNTA']->IDPRE),
+                trim($datos['PREGUNTA']->DESPRE),
+                $nuevo,    
             );  
             return response()->json($Lista);
         }
@@ -219,24 +218,24 @@ class Ticket_Asignar_Controller extends BaseSoapController
         }
         else
         {
-           foreach ($datos['TICKETS'] as $Index => $Datos) {
-                $Lista->rows[$Index]['id'] = (integer)$Datos->IDTIC;
+           foreach ($datos['PREGUNTA'] as $Index => $Datos) {
+                $Lista->rows[$Index]['id'] = (integer)$Datos->IDPRE;
+                if ($Datos->IDEST == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$Datos->IDPRE).',6)"><i class="fa fa-check"></i> '.$Datos->ESTPRE.'</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$Datos->IDPRE).',5)"><i class="fa fa-times"></i> '.$Datos->ESTPRE.'</button>'; 
+                }
                 $Lista->rows[$Index]['cell'] = array(
-                    trim((integer)$Datos->IDTIC),
-                    trim($Datos->TICASU),
-                    trim($Datos->TICTDE),
-                    trim($Datos->TICADE),
-                    trim($Datos->TICCPR),
-                    trim($Datos->TICDES),
-                    trim(date("d/m/Y", strtotime($Datos->TICFEC))),
-                    '<button class="btn btn-success btn-lg" data-toggle="modal" data-target="#Modal_Asignar_Ticket" data-backdrop="static" data-keyboard="false" type="button" onclick="asignar_ticket('.trim((integer)$Datos->IDTIC).')"><i class="fa fa-check-square-o"></i> ASIGNAR TICKET</button>'
+                    trim((integer)$Datos->IDPRE),
+                    trim($Datos->DESPRE),
+                    $nuevo,
                 );  
             }
             return response()->json($Lista);
         }
     }
     
-    public function traer_datos_personal(Request $request)
+    public function modificar_datos_pregunta($id_pregunta, Request $request)
     {
         self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
         $this->service = InstanceSoapClient::init();
@@ -245,15 +244,18 @@ class Ticket_Asignar_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USER',session('nombre_usuario'));
-        $usuariox =$root->appendChild($usuariox);  
+        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml =$root->appendChild($usuarioxml);  
 
-        $rolx = $xml->createElement('NIVEL',session('rol'));
-        $rolx =$root->appendChild($rolx);
+        $idpreguntaxml = $xml->createElement('IDP', $id_pregunta);
+        $idpreguntaxml =$root->appendChild($idpreguntaxml);
+        
+        $descripcionxml = $xml->createElement('DES', strtoupper($request['descripcion']));
+        $descripcionxml =$root->appendChild($descripcionxml);
 
         $xml->formatOutput = true;
 
-        $codigo = '009';
+        $codigo = '047';
         $trama = $xml->saveXML();
         //dd($trama);
 
@@ -273,14 +275,24 @@ class Ticket_Asignar_Controller extends BaseSoapController
         $xmlr2=substr($xmlr2, 1, $final2);
         $xmlr2=$xmlr2;
         $datos = (array) @simplexml_load_string($xmlr2);
-        //dd($datos['CODERR']);
-        //dd($datos['TECNICO']);
+        //dd($datos);
         
         return response()->json([
             'respuesta' => $datos['CODERR'],
-            'nro_tecnicos' => $datos['NUMTEC'],
-            'datos' => $datos['TECNICO'],
+            'mensaje' => $datos['MSGERR'],
         ]);
     }
-
+    
+    public function editar_estado_pregunta($id_pregunta, Request $request)
+    {
+        $Tbl_preguntas = new Tbl_preguntas;
+        $val=  $Tbl_preguntas::where("pre_id","=",$id_pregunta)->first();
+        if($val)
+        {
+            $val->pre_est = $request['estado'];
+            $val->save();
+        }
+        return $id_pregunta;
+    }
+    
 }

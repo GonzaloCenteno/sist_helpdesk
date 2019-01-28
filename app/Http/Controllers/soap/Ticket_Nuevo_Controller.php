@@ -16,6 +16,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         {
             $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
             $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+            $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
             
             $datos =& $this->traer_datos();
             if($datos['CODERR']=='00000')
@@ -23,7 +24,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
                 $numtip = $datos['NUMTIP'];
                 $numare = $datos['NUMARE'];
                 $numpri = $datos['NUMPRI'];
-                return view('tickets/vw_ticket_nuevo',compact('tblmenu_men','tblmenu_men2','numtip','numare','numpri','datos'));
+                return view('tickets/vw_ticket_nuevo',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','numtip','numare','numpri','datos'));
             }
 
             echo "HUBO UN ERROR TRAENDO LOS DATOS"; 

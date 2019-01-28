@@ -16,8 +16,9 @@ class Ticket_Buscar_Controller extends BaseSoapController
         {
             $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
             $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+            $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
             $prioridad = DB::table('cromohelp.tbl_prioridad')->orderBy('prio_id','asc')->get();
-            return view('tickets/vw_ticket_buscar',compact('tblmenu_men','tblmenu_men2','prioridad'));
+            return view('tickets/vw_ticket_buscar',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','prioridad'));
         }
         else
         {
@@ -44,12 +45,31 @@ class Ticket_Buscar_Controller extends BaseSoapController
             {
                 return $this->crear_tabla_buscar_tickets($request);
             }
+            if ($request['show'] == 'traer_encuesta') 
+            {
+                return $this->traer_datos_encuesta($request);
+            }
+            if ($request['show'] == 'traer_imagen_valor') 
+            {
+                return $this->traer_imagen_valor($request);
+            }
+            if ($request['show'] == 'traer_preguntas_valor') 
+            {
+                return $this->traer_preguntas_valor($request);
+            }
         }
     }
 
     public function create(Request $request)
     {
-        
+        if ($request['tipo'] == 1) 
+        {
+            return $this->insertar_datos_encuesta($request);
+        }
+        if ($request['tipo'] == 2) 
+        {
+            return $this->insertar_observaciones_encuesta($request);
+        }
     }
 
     public function edit($id_ticket,Request $request)
@@ -503,5 +523,139 @@ class Ticket_Buscar_Controller extends BaseSoapController
         {
             return "EL ARCHIVO NO EXISTE, O FUE ELIMINADO";
         }
+    }
+    
+    public function traer_datos_encuesta(Request $request)
+    {
+        $valores = DB::table('cromohelp.tbl_valores')->select('val_id','val_desc','val_img')->where('val_est',5)->orderBy('val_id','asc')->get();
+        $preguntas = DB::table('cromohelp.tbl_preguntas')->select('pre_id','pre_desc')->where('pre_est',5)->orderBy('pre_id','asc')->get();
+        
+        return response()->json([
+            'valores' => $valores,
+            'preguntas' => $preguntas,
+        ]);
+    }
+    
+    public function traer_imagen_valor(Request $request)
+    {
+        if ($request['valor_imagen'] == 0) 
+        {
+            $respuesta = DB::table('cromohelp.tbl_valores')->select('val_id','val_img2')->where('val_id',$request['id_valor'])->first();
+            return response()->json([
+                'respuesta' => $respuesta,
+                'valor' => 1,
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'valor' => 0
+            ]);
+        }
+    }
+    
+    public function traer_preguntas_valor(Request $request)
+    {
+        return $prg = DB::table('cromohelp.tbl_preguntas')->where('pre_est',5)->count();
+    }
+    
+    public function insertar_datos_encuesta(Request $request)
+    {
+        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        $this->service = InstanceSoapClient::init();
+
+        $xml = new \DomDocument('1.0', 'UTF-8'); 
+        $root = $xml->createElement('CROMOHELP'); 
+        $root = $xml->appendChild($root); 
+
+        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml =$root->appendChild($usuarioxml);  
+
+        $idcabxml = $xml->createElement('IDCAB', $request['id_ticket']);
+        $idcabxml =$root->appendChild($idcabxml);
+        
+        $idprexml = $xml->createElement('IDPRE', $request['pregunta']);
+        $idprexml =$root->appendChild($idprexml);
+        
+        $idvalxml = $xml->createElement('IDVAL', $request['valor']);
+        $idvalxml =$root->appendChild($idvalxml);
+
+        $xml->formatOutput = true;
+
+        $codigo = '049';
+        $trama = $xml->saveXML();
+        //dd($trama);
+
+        $parametros = [
+            "cod" =>$codigo,
+            "trama" => $trama
+        ];
+
+        $respuesta = $this->service->consulta($parametros);
+
+        $array2 = (array) $respuesta;
+        foreach ($array2 as &$valor2) 
+        {
+            $xmlr2 = $valor2 ;
+        }
+        $final2=strlen($xmlr2)-2;
+        $xmlr2=substr($xmlr2, 1, $final2);
+        $xmlr2=$xmlr2;
+        $datos = (array) @simplexml_load_string($xmlr2);
+        //dd($datos);
+        
+        return response()->json([
+            'respuesta' => $datos['CODERR'],
+            'mensaje' => $datos['MSGERR'],
+        ]);
+    }
+    
+    public function insertar_observaciones_encuesta(Request $request)
+    {
+        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        $this->service = InstanceSoapClient::init();
+
+        $xml = new \DomDocument('1.0', 'UTF-8'); 
+        $root = $xml->createElement('CROMOHELP'); 
+        $root = $xml->appendChild($root); 
+
+        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml =$root->appendChild($usuarioxml);  
+
+        $idcabxml = $xml->createElement('IDCAB', $request['id_ticket']);
+        $idcabxml =$root->appendChild($idcabxml);
+        
+        $descripcion = htmlspecialchars($request['respuesta']);
+        $descripcionxml = $xml->createElement('DESC', $descripcion);
+        $descripcionxml =$root->appendChild($descripcionxml);
+
+        $xml->formatOutput = true;
+
+        $codigo = '050';
+        $trama = $xml->saveXML();
+        //dd($trama);
+
+        $parametros = [
+            "cod" =>$codigo,
+            "trama" => $trama
+        ];
+
+        $respuesta = $this->service->consulta($parametros);
+
+        $array2 = (array) $respuesta;
+        foreach ($array2 as &$valor2) 
+        {
+            $xmlr2 = $valor2 ;
+        }
+        $final2=strlen($xmlr2)-2;
+        $xmlr2=substr($xmlr2, 1, $final2);
+        $xmlr2=$xmlr2;
+        $datos = (array) @simplexml_load_string($xmlr2);
+        //dd($datos);
+        
+        return response()->json([
+            'respuesta' => $datos['CODERR'],
+            'mensaje' => $datos['MSGERR'],
+        ]);
     }
 }

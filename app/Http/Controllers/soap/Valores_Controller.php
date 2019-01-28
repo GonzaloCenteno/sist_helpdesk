@@ -4,8 +4,9 @@ namespace App\Http\Controllers\soap;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Tbl_valores;
 
-class Ticket_Asignar_Controller extends BaseSoapController
+class Valores_Controller extends BaseSoapController
 {
     private $service;
     public function index(Request $request)
@@ -17,7 +18,7 @@ class Ticket_Asignar_Controller extends BaseSoapController
                 $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
                 $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
                 $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-                return view('tickets/vw_ticket_asignar',compact('tblmenu_men','tblmenu_men2','tblmenu_men3'));
+                return view('encuesta/vw_valores',compact('tblmenu_men','tblmenu_men2','tblmenu_men3'));
             }
             else
             {
@@ -34,27 +35,55 @@ class Ticket_Asignar_Controller extends BaseSoapController
     {
         if ($id > 0) 
         {
-           
+            if ($request['show'] == 'datos_valor') 
+            {
+                return $this->recuperar_datos_valor($id, $request);
+            }
         }
         else
         {
-            if ($request['grid'] == 'asignar_tickets') 
+            if ($request['grid'] == 'valores') 
             {
-                return $this->crear_tabla_asignar_tickets($request);
-            }
-            if ($request['datos'] == 'traer_personal')
-            {
-                return $this->traer_datos_personal($request);
+                return $this->crear_tabla_valores($request);
             }
         }
     }
 
     public function create(Request $request)
     {
-    
+        
     }
 
-    public function edit($id_ticket,Request $request)
+    public function edit($id_valor,Request $request)
+    {
+        $Tbl_valores = new Tbl_valores;
+        $val=  $Tbl_valores::where("val_id","=",$id_valor)->first();
+        if($val)
+        {
+            $val->val_est = $request['estado'];
+            $val->save();
+        }
+        return $id_valor;
+    }
+
+    public function destroy(Request $request)
+    {
+        
+    }
+
+    public function store(Request $request)
+    {
+        if ($request['tipo'] == 1) 
+        {
+            return $this->crear_registro_valor($request);
+        }
+        if ($request['tipo'] == 2) 
+        {
+            return $this->editar_registro_valor($request);
+        }
+    }
+    
+    public function crear_registro_valor(Request $request)
     {
         self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
         $this->service = InstanceSoapClient::init();
@@ -63,21 +92,25 @@ class Ticket_Asignar_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USER',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
-        $rolxml = $xml->createElement('NIVEL',session('rol'));
-        $rolxml =$root->appendChild($rolxml);
+        $desxml = $xml->createElement('DES', strtoupper($request['desc_valor']));
+        $desxml =$root->appendChild($desxml);
         
-        $idticketxml = $xml->createElement('IDTICKET',$id_ticket);
-        $idticketxml =$root->appendChild($idticketxml);
+        $file1 = $request->file('img1_valor');
+        $file_1 = \File::get($file1);
+        $img1xml = $xml->createElement('IMG1', base64_encode($file_1));
+        $img1xml =$root->appendChild($img1xml);
         
-        $idtecnicoxml = $xml->createElement('IDUSUARIO',$request['id_tecnico']);
-        $idtecnicoxml =$root->appendChild($idtecnicoxml);
+        $file2 = $request->file('img2_valor');
+        $file_2 = \File::get($file2);
+        $img2xml = $xml->createElement('IMG2', base64_encode($file_2));
+        $img2xml =$root->appendChild($img2xml);
 
         $xml->formatOutput = true;
 
-        $codigo = '014';
+        $codigo = '043';
         $trama = $xml->saveXML();
         //dd($trama);
 
@@ -104,18 +137,8 @@ class Ticket_Asignar_Controller extends BaseSoapController
             'mensaje' => $datos['MSGERR'],
         ]);
     }
-
-    public function destroy(Request $request)
-    {
-        
-    }
-
-    public function store(Request $request)
-    {
-        
-    }
     
-    public function crear_tabla_asignar_tickets(Request $request)
+    public function crear_tabla_valores(Request $request)
     {
         header('Content-type: application/json');
         $page = $_GET['page'];
@@ -137,8 +160,8 @@ class Ticket_Asignar_Controller extends BaseSoapController
             $usuariox = $xml->createElement('USU',session('nombre_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolx = $xml->createElement('NIVEL',session('rol'));
-            $rolx =$root->appendChild($rolx);
+            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml =$root->appendChild($rolxml);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
             $orderby1 =$root->appendChild($orderby1);  
@@ -154,7 +177,7 @@ class Ticket_Asignar_Controller extends BaseSoapController
 
             $xml->formatOutput = true;
 
-            $codigo = '008';
+            $codigo = '045';
             $trama = $xml->saveXML();
             //dd($trama);
 
@@ -174,7 +197,7 @@ class Ticket_Asignar_Controller extends BaseSoapController
             $xmlr2=substr($xmlr2, 1, $final2);
             $xmlr2=$xmlr2;
             $datos = (array) @simplexml_load_string($xmlr2);
-            //dd($datos);
+            //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
             
@@ -196,16 +219,17 @@ class Ticket_Asignar_Controller extends BaseSoapController
         
         if ($datos['NUMTIC'] == 1) 
         {
-            $Lista->rows[0]['id'] = (integer)$datos['TICKETS']->IDTIC;
+            $Lista->rows[0]['id'] = (integer)$datos['VALOR']->IDVAL;
+            if ($datos['VALOR']->IDEST == 5) {
+                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_valor('.trim((integer)$datos['VALOR']->IDVAL).',6)"><i class="fa fa-check"></i> '.$datos['VALOR']->ESTVAL.'</button>';
+            }else{
+                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_valor('.trim((integer)$datos['VALOR']->IDVAL).',5)"><i class="fa fa-times"></i> '.$datos['VALOR']->ESTVAL.'</button>'; 
+            }
             $Lista->rows[0]['cell'] = array(
-                trim((integer)$datos['TICKETS']->IDTIC),
-                    trim($datos['TICKETS']->TICASU),
-                    trim($datos['TICKETS']->TICTDE),
-                    trim($datos['TICKETS']->TICADE),
-                    trim($datos['TICKETS']->TICCPR),
-                    trim($datos['TICKETS']->TICDES),
-                    trim(date("d/m/Y", strtotime($datos['TICKETS']->TICFEC))),
-                    '<button class="btn btn-success btn-lg" data-toggle="modal" data-target="#Modal_Asignar_Ticket" data-backdrop="static" data-keyboard="false" type="button" onclick="asignar_ticket('.trim((integer)$datos['TICKETS']->IDTIC).')"><i class="fa fa-check-square-o"></i> ASIGNAR TICKET</button>'
+                trim((integer)$datos['VALOR']->IDVAL),
+                trim($datos['VALOR']->DESVAL),
+                trim($datos['VALOR']->IMG1VAL),
+                $nuevo,    
             );  
             return response()->json($Lista);
         }
@@ -219,24 +243,31 @@ class Ticket_Asignar_Controller extends BaseSoapController
         }
         else
         {
-           foreach ($datos['TICKETS'] as $Index => $Datos) {
-                $Lista->rows[$Index]['id'] = (integer)$Datos->IDTIC;
+           foreach ($datos['VALOR'] as $Index => $Datos) {
+                $Lista->rows[$Index]['id'] = (integer)$Datos->IDVAL;
+                if ($Datos->IDEST == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_valor('.trim((integer)$Datos->IDVAL).',6)"><i class="fa fa-check"></i> '.$Datos->ESTVAL.'</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_valor('.trim((integer)$Datos->IDVAL).',5)"><i class="fa fa-times"></i> '.$Datos->ESTVAL.'</button>'; 
+                }
                 $Lista->rows[$Index]['cell'] = array(
-                    trim((integer)$Datos->IDTIC),
-                    trim($Datos->TICASU),
-                    trim($Datos->TICTDE),
-                    trim($Datos->TICADE),
-                    trim($Datos->TICCPR),
-                    trim($Datos->TICDES),
-                    trim(date("d/m/Y", strtotime($Datos->TICFEC))),
-                    '<button class="btn btn-success btn-lg" data-toggle="modal" data-target="#Modal_Asignar_Ticket" data-backdrop="static" data-keyboard="false" type="button" onclick="asignar_ticket('.trim((integer)$Datos->IDTIC).')"><i class="fa fa-check-square-o"></i> ASIGNAR TICKET</button>'
+                    trim((integer)$Datos->IDVAL),
+                    trim($Datos->DESVAL),
+                    trim($Datos->IMG1VAL),
+                    $nuevo,
                 );  
             }
             return response()->json($Lista);
         }
     }
     
-    public function traer_datos_personal(Request $request)
+    public function recuperar_datos_valor($id_valor, Request $request)
+    {
+        $datos = DB::table('cromohelp.tbl_valores')->select('val_desc','val_img','val_img2')->where('val_id',$id_valor)->get();
+        return $datos;
+    }
+    
+    public function editar_registro_valor(Request $request)
     {
         self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
         $this->service = InstanceSoapClient::init();
@@ -245,15 +276,28 @@ class Ticket_Asignar_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USER',session('nombre_usuario'));
-        $usuariox =$root->appendChild($usuariox);  
+        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml =$root->appendChild($usuarioxml);  
+        
+        $idvalorxml = $xml->createElement('ID', $request['id_valor']);
+        $idvalorxml =$root->appendChild($idvalorxml);
 
-        $rolx = $xml->createElement('NIVEL',session('rol'));
-        $rolx =$root->appendChild($rolx);
+        $desxml = $xml->createElement('DES', strtoupper($request['desc_valor']));
+        $desxml =$root->appendChild($desxml);
+        
+        $file1 = $request->file('img1_valor');
+        $file_1 = \File::get($file1);
+        $img1xml = $xml->createElement('IMG1', base64_encode($file_1));
+        $img1xml =$root->appendChild($img1xml);
+        
+        $file2 = $request->file('img2_valor');
+        $file_2 = \File::get($file2);
+        $img2xml = $xml->createElement('IMG2', base64_encode($file_2));
+        $img2xml =$root->appendChild($img2xml);
 
         $xml->formatOutput = true;
 
-        $codigo = '009';
+        $codigo = '044';
         $trama = $xml->saveXML();
         //dd($trama);
 
@@ -273,13 +317,11 @@ class Ticket_Asignar_Controller extends BaseSoapController
         $xmlr2=substr($xmlr2, 1, $final2);
         $xmlr2=$xmlr2;
         $datos = (array) @simplexml_load_string($xmlr2);
-        //dd($datos['CODERR']);
-        //dd($datos['TECNICO']);
+        //dd($datos);
         
         return response()->json([
             'respuesta' => $datos['CODERR'],
-            'nro_tecnicos' => $datos['NUMTEC'],
-            'datos' => $datos['TECNICO'],
+            'mensaje' => $datos['MSGERR'],
         ]);
     }
 

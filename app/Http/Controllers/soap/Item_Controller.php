@@ -18,6 +18,7 @@ class Item_Controller extends BaseSoapController
             {
                 $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
                 $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
+                $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
                 
                 $proveedores =& $this->traer_proveedores();
                 $marcas =& $this->traer_marcas();
@@ -31,7 +32,7 @@ class Item_Controller extends BaseSoapController
                     $num_pro = $proveedores['NUMTIC'];
                     $num_mar = $marcas['NUMTIC'];
                     $num_fac = $facturas['NUMTIC'];
-                    return view('inventario/vw_item',compact('tblmenu_men','tblmenu_men2','proveedor','marca','factura','num_pro','num_mar','num_fac'));
+                    return view('inventario/vw_item',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','proveedor','marca','factura','num_pro','num_mar','num_fac'));
                 }
 
                 echo "HUBO UN ERROR TRAENDO LOS DATOS";
