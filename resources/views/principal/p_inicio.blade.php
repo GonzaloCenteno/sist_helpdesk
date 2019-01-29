@@ -303,7 +303,7 @@
                 encrypted: true
             });
 
-            if (variable == 1)
+            if (variable == 1 || variable == 2)
             {
                 var channel = pusher.subscribe('notify_user');
                 channel.bind('notify-event_user', function (message) {

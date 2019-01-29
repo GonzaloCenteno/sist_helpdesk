@@ -44,6 +44,10 @@ class Ticket_Historial_Controller extends BaseSoapController
             {
                 return $this->crear_tabla_buscar_tickets($request);
             }
+            if ($request['show'] == 'traer_historial_encuesta') 
+            {
+                return $this->traer_datos_historial_encuesta($request);
+            }
         }
     }
 
@@ -382,5 +386,21 @@ class Ticket_Historial_Controller extends BaseSoapController
                 'datos' => $datos['RESPUESTA'],
             ]);
         }
+    }
+    
+    public function traer_datos_historial_encuesta(Request $request)
+    {
+        $encuesta = DB::table('cromohelp.tbl_encuesta')
+                ->join('cromohelp.tbl_preguntas', 'tbl_encuesta.enc_idpreg', '=', 'tbl_preguntas.pre_id')
+                ->join('cromohelp.tbl_valores', 'tbl_encuesta.enc_idvalor', '=', 'tbl_valores.val_id')
+                ->select('tbl_preguntas.pre_desc', 'tbl_valores.val_img', 'tbl_valores.val_desc')
+                ->where('tbl_encuesta.enc_idcab',$request['id_ticket'])
+                ->get();
+        
+        $observacion = DB::table('cromohelp.tbl_observaciones')->where('obs_idcab',$request['id_ticket'])->get();
+        return response()->json([
+            'encuesta' => $encuesta,
+            'observacion' => $observacion,
+        ]);
     }
 }

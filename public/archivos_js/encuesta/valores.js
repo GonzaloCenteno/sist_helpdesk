@@ -261,12 +261,14 @@ function validarExtensionArchivo1(){
         fileInput.value = '';
         $("#form_imagen1").attr("src","img/product.png");
         return false;
-    }else if(file.size > 50000){
-        alertaArchivo("IMAGEN EXEDE EL TAMAÑO PERMITIDO");
-        fileInput.value = '';
-        $("#form_imagen1").attr("src","img/product.png");
-        return false;
-    }else{
+    }
+//    else if(file.size > 380000){
+//        alertaArchivo("IMAGEN EXEDE EL TAMAÑO PERMITIDO");
+//        fileInput.value = '';
+//        $("#form_imagen1").attr("src","img/product.png");
+//        return false;
+//    }
+    else{
         if (fileInput.files && fileInput.files[0]) {
             var reader = new FileReader();
             reader.onload = function (e) {
@@ -287,12 +289,14 @@ function validarExtensionArchivo2(){
         fileInput.value = '';
         $("#form_imagen2").attr("src","img/product.png");
         return false;
-    }else if(file.size > 50000){
-        alertaArchivo("IMAGEN EXEDE EL TAMAÑO PERMITIDO");
-        fileInput.value = '';
-        $("#form_imagen2").attr("src","img/product.png");
-        return false;
-    }else{
+    }
+//    else if(file.size > 380000){
+//        alertaArchivo("IMAGEN EXEDE EL TAMAÑO PERMITIDO");
+//        fileInput.value = '';
+//        $("#form_imagen2").attr("src","img/product.png");
+//        return false;
+//    }
+    else{
         if (fileInput.files && fileInput.files[0]) {
             var reader = new FileReader();
             reader.onload = function (e) {

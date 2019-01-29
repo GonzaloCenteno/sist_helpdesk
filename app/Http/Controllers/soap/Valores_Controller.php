@@ -145,67 +145,18 @@ class Valores_Controller extends BaseSoapController
         $limit = $_GET['rows'];
         $sidx = $_GET['sidx'];
         $sord = $_GET['sord'];
-        $start = ($limit * $page) - $limit;  
+        $start = ($limit * $page) - $limit; // do not put $limit*($page - 1)  
         if ($start < 0) {
             $start = 0;
         }
-        
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
-            $this->service = InstanceSoapClient::init();
+        $totalg = DB::select("select count(*) as total from cromohelp.tbl_valores");
+        $sql = DB::table('cromohelp.tbl_valores')->orderBy($sidx, $sord)->limit($limit)->offset($start)->get();
 
-            $xml = new \DomDocument('1.0', 'UTF-8'); 
-            $root = $xml->createElement('CROMOHELP'); 
-            $root = $xml->appendChild($root); 
-
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
-            $usuariox =$root->appendChild($usuariox);  
-            
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
-            $rolxml =$root->appendChild($rolxml);  
-
-            $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
-            $orderby1 =$root->appendChild($orderby1);  
-
-            $orderby2=$xml->createElement('ORDERBY2',$sord); 
-            $orderby2 =$root->appendChild($orderby2); 
-
-            $limitxml=$xml->createElement('LIMIT',$limit); 
-            $limitxml =$root->appendChild($limitxml); 
-
-            $offsetxml=$xml->createElement('OFFSET',$start); 
-            $offsetxml =$root->appendChild($offsetxml); 
-
-            $xml->formatOutput = true;
-
-            $codigo = '045';
-            $trama = $xml->saveXML();
-            //dd($trama);
-
-            $parametros = [
-                "cod" =>$codigo,
-                "trama" => $trama
-            ];
-
-            $respuesta = $this->service->consulta($parametros);
-
-            $array2 = (array) $respuesta;
-            foreach ($array2 as &$valor2) 
-            {
-                $xmlr2 = $valor2 ;
-            }
-            $final2=strlen($xmlr2)-2;
-            $xmlr2=substr($xmlr2, 1, $final2);
-            $xmlr2=$xmlr2;
-            $datos = (array) @simplexml_load_string($xmlr2);
-            //dd($array['NUMTIC']);
-            //dd($array['TICKETS'][0]->IDTIC);
-            //$totalg = $datos->NUMTIC[0];
-            
         $total_pages = 0;
         if (!$sidx) {
             $sidx = 1;
         }
-        $count = $datos['NUMTIC'];
+        $count = $totalg[0]->total;
         if ($count > 0) {
             $total_pages = ceil($count / $limit);
         }
@@ -216,49 +167,21 @@ class Valores_Controller extends BaseSoapController
         $Lista->page = $page;
         $Lista->total = $total_pages;
         $Lista->records = $count;
-        
-        if ($datos['NUMTIC'] == 1) 
-        {
-            $Lista->rows[0]['id'] = (integer)$datos['VALOR']->IDVAL;
-            if ($datos['VALOR']->IDEST == 5) {
-                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_valor('.trim((integer)$datos['VALOR']->IDVAL).',6)"><i class="fa fa-check"></i> '.$datos['VALOR']->ESTVAL.'</button>';
+        foreach ($sql as $Index => $Datos) {
+            $Lista->rows[$Index]['id'] = $Datos->val_id; 
+            if ($Datos->val_est == 5) {
+                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_valor('.trim($Datos->val_id).',6)"><i class="fa fa-check"></i> ACTIVO</button>';
             }else{
-                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_valor('.trim((integer)$datos['VALOR']->IDVAL).',5)"><i class="fa fa-times"></i> '.$datos['VALOR']->ESTVAL.'</button>'; 
+                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_valor('.trim($Datos->val_id).',5)"><i class="fa fa-times"></i> DESACTIVO</button>'; 
             }
-            $Lista->rows[0]['cell'] = array(
-                trim((integer)$datos['VALOR']->IDVAL),
-                trim($datos['VALOR']->DESVAL),
-                trim($datos['VALOR']->IMG1VAL),
-                $nuevo,    
-            );  
-            return response()->json($Lista);
+            $Lista->rows[$Index]['cell'] = array(
+                trim($Datos->val_id),
+                trim($Datos->val_desc),
+                trim($Datos->val_img),
+                $nuevo
+            );
         }
-        else if ($datos['NUMTIC'] == 0) 
-        {
-            return response()->json([
-                'page' => 0,
-                'records' => 0,
-                'total' => 0,
-            ]);
-        }
-        else
-        {
-           foreach ($datos['VALOR'] as $Index => $Datos) {
-                $Lista->rows[$Index]['id'] = (integer)$Datos->IDVAL;
-                if ($Datos->IDEST == 5) {
-                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_valor('.trim((integer)$Datos->IDVAL).',6)"><i class="fa fa-check"></i> '.$Datos->ESTVAL.'</button>';
-                }else{
-                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_valor('.trim((integer)$Datos->IDVAL).',5)"><i class="fa fa-times"></i> '.$Datos->ESTVAL.'</button>'; 
-                }
-                $Lista->rows[$Index]['cell'] = array(
-                    trim((integer)$Datos->IDVAL),
-                    trim($Datos->DESVAL),
-                    trim($Datos->IMG1VAL),
-                    $nuevo,
-                );  
-            }
-            return response()->json($Lista);
-        }
+        return response()->json($Lista);
     }
     
     public function recuperar_datos_valor($id_valor, Request $request)

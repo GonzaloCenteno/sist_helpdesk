@@ -223,78 +223,11 @@ jQuery(document).on("click", "#btn_cerrar_ticket", function(){
      }).then(function(result) {
             if (variable == 3) 
             {
-                $.ajax({
-                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                    url: 'ticketbuscar/'+id_ticket+'/edit',
-                    type: 'GET',
-                    data:
-                    {
-                        respuesta:'EL USUARIO CERRO ESTE TICKET',
-                        tipo:2
-                    },
-                    success: function(data) 
-                    {
-                        if (data == '00000') 
-                        {
-                            crear_encuesta();
-                        }
-                        else if (data == '90006') 
-                        {
-                            MensajeAdvertencia('PRIMERO DEBES ASIGNAR EL TICKET A UNA PERSONA');
-                            CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
-                        }
-                        else
-                        {
-                            MensajeAdvertencia('NO SE PUDO ENVIAR LA RESPUESTA');
-                            console.log(data);
-                        }
-                    },
-                    error: function(data) {
-                        MensajeAdvertencia("hubo un error, Comunicar al Administrador");
-                        console.log('error');
-                        console.log(data);
-                    }
-                });
+                crear_encuesta();           
             }
             else
             {
-                $.ajax({
-                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                    url: 'ticketbuscar/'+id_ticket+'/edit',
-                    type: 'GET',
-                    data:
-                    {
-                        respuesta:'EL USUARIO CERRO ESTE TICKET',
-                        tipo:2
-                    },
-                    success: function(data) 
-                    {
-                        if (data == '00000') 
-                        {
-                            $('#btn_cerrar_sesion').click();
-                            MensajeConfirmacion('EL TICKET FUE CERRADO');
-                            jQuery("#tabla_tickets").jqGrid('setGridParam', {
-                                url: 'ticketbuscar/0?grid=tickets'
-                            }).trigger('reloadGrid');
-                            CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
-                        }
-                        else if (data == '90006') 
-                        {
-                            MensajeAdvertencia('PRIMERO DEBES ASIGNAR EL TICKET A UNA PERSONA');
-                            CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
-                        }
-                        else
-                        {
-                            MensajeAdvertencia('NO SE PUDO ENVIAR LA RESPUESTA');
-                            console.log(data);
-                        }
-                    },
-                    error: function(data) {
-                        MensajeAdvertencia("hubo un error, Comunicar al Administrador");
-                        console.log('error');
-                        console.log(data);
-                    }
-                });
+                cerrar_ticket(id_ticket);
             }
         }, function(dismiss) {
             console.log('OPERACION CANCELADA');
@@ -324,7 +257,7 @@ function crear_encuesta()
                 for(j=0;j<data.valores.length;j++)
                 {
                     html = html+'<div style="padding-left: 45px;" class="form-group col-md-2 text-center"><input type="hidden" id="valor_'+j+'" value="'+data.valores[j].val_id+'"><input type="hidden" id="valimagen_'+i+'_'+j+'" class="img_preg_'+i+'" value="0">\n\
-                                 <center><a href="#" onClick="activar_valor('+i+','+j+',valor_'+j+',valimagen_'+i+'_'+j+');"><img class="form-control text-center" id="imagen_'+i+'_'+j+'" src="data:image/png;base64,'+data.valores[j].val_img+'" border="0" style="width: 60px;height: 60px;"/></a>\n\
+                                 <center><a href="#" onClick="activar_valor('+i+','+j+',valor_'+j+',valimagen_'+i+'_'+j+');"><img class="form-control text-center" id="imagen_'+i+'_'+j+'" src="data:image/png;base64,'+data.valores[j].val_img2+'" border="0" style="width: 80px;height: 60px;"/></a>\n\
                                  <label for="valores" class="fw-500 text-center"><b> '+data.valores[j].val_desc+' </b></label></center></div>';    
                 }
             }
@@ -361,7 +294,7 @@ function activar_valor(valor_i,valor_j,id_valor,val_imagen)
         {
             if (data.valor == 1) 
             {
-                $("#imagen_"+valor_i+"_"+valor_j).attr("src","data:image/png;base64,"+data.respuesta.val_img2);
+                $("#imagen_"+valor_i+"_"+valor_j).attr("src","data:image/png;base64,"+data.respuesta.val_img);
                 $(".img_preg_"+valor_i).val(data.valor);
                 //$("#imagen_"+valor_i+"_"+valor_j).attr("imgvalor",data.respuesta.val_id);
                 $("#valor_pregunta_"+valor_i).val(data.respuesta.val_id);
@@ -399,6 +332,7 @@ jQuery(document).on("click","#btn_enviar_respuesta", function(){
             type: 'GET',
             success: function(data) 
             {
+                cerrar_ticket(id_ticket);
                 //console.log(data);
                 for(i=0;i<data;i++)
                 {
@@ -486,7 +420,49 @@ function insertar_observacion_encuesta(id_ticket)
             console.log(data);
         }
     });
-}       
+}   
+
+function cerrar_ticket(id_ticket)
+{
+    $.ajax({
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        url: 'ticketbuscar/'+id_ticket+'/edit',
+        type: 'GET',
+        data:
+        {
+            respuesta:'EL USUARIO CERRO ESTE TICKET',
+            tipo:2
+        },
+        success: function(data) 
+        {
+            if (data == '00000') 
+            {
+                $('#btn_cerrar_sesion').click();
+                MensajeConfirmacion('EL TICKET FUE CERRADO');
+                jQuery("#tabla_tickets").jqGrid('setGridParam', {
+                    url: 'ticketbuscar/0?grid=tickets'
+                }).trigger('reloadGrid');
+                CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
+            }
+            else if (data == '90006') 
+            {
+                MensajeAdvertencia('PRIMERO DEBES ASIGNAR EL TICKET A UNA PERSONA');
+                CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
+            }
+            else
+            {
+                MensajeAdvertencia('NO SE PUDO ENVIAR LA RESPUESTA');
+                console.log(data);
+            }
+        },
+        error: function(data) {
+            MensajeAdvertencia("hubo un error, Comunicar al Administrador");
+            console.log('error');
+            console.log(data);
+        }
+    });
+}
+    
 </script>
 @stop
 @endsection

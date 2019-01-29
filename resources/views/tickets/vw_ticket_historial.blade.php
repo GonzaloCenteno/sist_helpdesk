@@ -130,7 +130,39 @@
                 
             </div>
             <div class="modal-footer">
+                @if(session('rol') == 1 || session('rol') == 2)
+                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#Modal_Info_Encuesta" data-backdrop="static" data-keyboard="false" id="btn_ver_info_encuesta">VER RESULTADO ENCUESTA</button>
+                @else
+                @endif
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_cerrar_sesion">CERRAR VENTANA</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL HISTORIAL ENCUESTA -->
+
+<div class="modal fade" id="Modal_Info_Encuesta" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">INFORMACION ENCUESTA</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row" id="info_encuesta">
+                    
+                </div>
+                <hr>
+                <div class="form-group">
+                    <label for="editor" class="fw-500"><b>¿PORQUE MOTIVOS RESPONDISTE DE ESTA MANERA?</b></label><br>
+                    <label class="bdc-grey-200" id="mdl_obsr_encuesta"></label>
+                </div> 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">CERRAR VENTANA</button>
             </div>
         </div>
     </div>

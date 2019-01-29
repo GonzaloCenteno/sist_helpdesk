@@ -527,7 +527,7 @@ class Ticket_Buscar_Controller extends BaseSoapController
     
     public function traer_datos_encuesta(Request $request)
     {
-        $valores = DB::table('cromohelp.tbl_valores')->select('val_id','val_desc','val_img')->where('val_est',5)->orderBy('val_id','asc')->get();
+        $valores = DB::table('cromohelp.tbl_valores')->select('val_id','val_desc','val_img2')->where('val_est',5)->orderBy('val_id','asc')->get();
         $preguntas = DB::table('cromohelp.tbl_preguntas')->select('pre_id','pre_desc')->where('pre_est',5)->orderBy('pre_id','asc')->get();
         
         return response()->json([
@@ -540,7 +540,7 @@ class Ticket_Buscar_Controller extends BaseSoapController
     {
         if ($request['valor_imagen'] == 0) 
         {
-            $respuesta = DB::table('cromohelp.tbl_valores')->select('val_id','val_img2')->where('val_id',$request['id_valor'])->first();
+            $respuesta = DB::table('cromohelp.tbl_valores')->select('val_id','val_img')->where('val_id',$request['id_valor'])->first();
             return response()->json([
                 'respuesta' => $respuesta,
                 'valor' => 1,

@@ -143,3 +143,41 @@ jQuery(document).on("click", "#btn_act_table_tickets_historial", function(){
     $('#fecha_desde_ht').val('');
     $('#fecha_hasta_ht').val('');
 })
+
+jQuery(document).on("click", "#btn_ver_info_encuesta", function(){
+    id_ticket = $('#tabla_historial_tickets').jqGrid ('getGridParam', 'selrow');
+    
+    $.ajax({
+        url: 'tickethistorial/0?show=traer_historial_encuesta',
+        type: 'GET',
+        beforeSend:function()
+        {            
+            MensajeEspera('CARGANDO INFORMACION');  
+        },
+        data:
+        {
+            id_ticket:id_ticket
+        },
+        success: function(data) 
+        {     
+            $('#btn_cerrar_sesion').click();
+            html="";
+            for(i=0;i<data.encuesta.length;i++)
+            {
+                html = html+'<div class="form-group col-md-7"><label for="preguntas" class="fw-500"><b> '+data.encuesta[i].pre_desc+' </b></label></div>\n\
+                             <div class="form-group col-md-2"><label for="preguntas" class="fw-500"><b> '+data.encuesta[i].val_desc+' </b></label></div>\n\
+                             <img class="form-control text-center" src="data:image/png;base64,'+data.encuesta[i].val_img+'" border="0" style="width: 80px;height: 60px;"/>';
+            }
+            $('.modal-body').scrollTop(0);
+            $('#mdl_obsr_encuesta').html(data.observacion[0].obs_desc);
+            $("#info_encuesta").html(html);
+            swal.close();
+            //console.log(data.observacion[0].obs_desc);
+        },
+        error: function(data) {
+            MensajeAdvertencia("hubo un error, Comunicar al Administrador");
+            console.log('error');
+            console.log(data);
+        }
+    });
+})
