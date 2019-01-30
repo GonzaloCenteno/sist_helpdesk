@@ -162,7 +162,7 @@
                 </div> 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">CERRAR VENTANA</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cerrar_ventana_encuesta">CERRAR VENTANA</button>
             </div>
         </div>
     </div>

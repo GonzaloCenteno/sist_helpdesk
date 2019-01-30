@@ -435,24 +435,14 @@ function cerrar_ticket(id_ticket)
         },
         success: function(data) 
         {
-            if (data == '00000') 
+            CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
+            if (data.respuesta == '00000') 
             {
-                $('#btn_cerrar_sesion').click();
-                MensajeConfirmacion('EL TICKET FUE CERRADO');
-                jQuery("#tabla_tickets").jqGrid('setGridParam', {
-                    url: 'ticketbuscar/0?grid=tickets'
-                }).trigger('reloadGrid');
-                CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
-            }
-            else if (data == '90006') 
-            {
-                MensajeAdvertencia('PRIMERO DEBES ASIGNAR EL TICKET A UNA PERSONA');
-                CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');
+                console.log(data.mensaje);
             }
             else
             {
-                MensajeAdvertencia('NO SE PUDO ENVIAR LA RESPUESTA');
-                console.log(data);
+                console.log("ERROR AL ENVIAR DATOS" + data.mensaje);
             }
         },
         error: function(data) {

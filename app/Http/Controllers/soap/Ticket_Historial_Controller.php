@@ -398,9 +398,20 @@ class Ticket_Historial_Controller extends BaseSoapController
                 ->get();
         
         $observacion = DB::table('cromohelp.tbl_observaciones')->where('obs_idcab',$request['id_ticket'])->get();
-        return response()->json([
-            'encuesta' => $encuesta,
-            'observacion' => $observacion,
-        ]);
+        
+        if ($encuesta->count() > 0 && $observacion->count() > 0) 
+        {
+            return response()->json([
+                'rpta' => 1,
+                'encuesta' => $encuesta,
+                'observacion' => $observacion,
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'rpta' => 0, 
+            ]);
+        }
     }
 }
