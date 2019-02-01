@@ -140,28 +140,27 @@ class Ticket_Nuevo_Controller extends BaseSoapController
             $datos = simplexml_load_string($xmlr2);
             //dd($datos);
             
+            $respuesta_datos = $datos->TITU[0].", ".$datos->ESTA[0]." - ".$datos->FECHA[0];
+            
             $options = array(
                 'cluster' => 'us2', 
                 'encrypted' => true
             );
 
-           //Remember to set your credentials below.
             $pusher = new Pusher(
                 'd8966da1d9f626630fe1',
                 '82beae62b2d0106fd43d',
                 '686357',
                 $options
             );
-
-            //$message= "Este es un nuevo mensaje:".$Incidencia->titulo;
-            //$message = 'HOLA ESTE ES UN MNESAJE DE PUERBA';
-
-            //Send a message to notify channel with an event name of notify-event
-            $pusher->trigger('notify_user', 'notify-event_user', $datos->TITU[0].", ".$datos->ESTA[0]." - ".$datos->FECHA[0]);
+            
+            $this->llamar_notificacion($respuesta_datos);
+            $pusher->trigger('notify_user', 'notify-event_user', $respuesta_datos);
+            
             
             return response()->json([
                 'respuesta' => $datos->CODERR[0],
-                'texto' => $datos->TITU[0].", ".$datos->ESTA[0]." - ".$datos->FECHA[0],
+                'texto' => $respuesta_datos,
                 'mensaje' => $datos->MSGERR[0],
             ]);
         }
@@ -172,6 +171,51 @@ class Ticket_Nuevo_Controller extends BaseSoapController
             'error'=>$validator->errors()->all()
             ]);
         }
+    }
+    
+    public function llamar_notificacion($respuesta_datos)
+    {
+        $content      = array(
+            "en" => 'NUEVO INCIDENTE REGISTRADO'
+        );
+        $headings     = array(
+            "en" => 'MENSAJE CROMOAYUDA'
+        );
+        $hashes_array = array();
+        array_push($hashes_array, array(
+            "id" => "like-button",
+            "text" => $respuesta_datos,
+            "icon" => "http://i.imgur.com/N8SN8ZS.png",
+            "url" => \URL::to('ticketasignar')
+        ));
+        $fields = array(
+            'app_id' => "e15317a4-06ae-422c-919d-eade16bf4608",
+            'included_segments' => array(
+                'All'
+            ),
+            'contents' => $content,
+            'headings' => $headings,
+            'web_buttons' => $hashes_array,
+            'url' => \URL::to('/'),
+            'chrome_web_image' => url('img/bus-home.png')
+        );
+
+        $fields = json_encode($fields);
+   
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json; charset=utf-8',
+            'Authorization: Basic ZDhjOTRkNzMtMjQ5OS00MDViLTk2NTMtZDMwOTU4YzEwY2Qx'
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
     }
     
     public function &traer_datos()

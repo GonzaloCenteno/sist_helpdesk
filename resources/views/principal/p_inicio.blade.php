@@ -249,6 +249,12 @@
                         </ul>
                     </div>
                 </div>
+                
+                <div style="display:none;">
+                    <audio id="alerta_mensaje" controls>
+                        <source type="audio/mp3" src="{{ asset('alertas/dota2.mp3') }}">
+                    </audio>
+                </div>
 
                 <!-- ### $App Screen Content ### -->
                 <main class='main-content bgc-grey-100' style="background-image:url('{{ asset('img/cromohelp/modelo2.jpg') }}');">
@@ -273,8 +279,8 @@
         <script type="text/javascript" src="{{ asset('js/jquery.jqGrid.min.js') }}"></script>
         <script type="text/javascript" src="{{ asset('js/grid.locale-es.js') }}"></script>
         <script type="text/javascript" src="{{ asset('js/select2.full.min.js') }}"></script>
-        <script type="text/javascript" src="{{ asset('js/push.min.js') }}"></script>
         <script src="https://js.pusher.com/4.2/pusher.min.js"></script>
+        <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
         <script type="text/javascript" src="{{ asset('archivos_js/funciones_globales.js') }}"></script>
 
         <script type="text/javascript">
@@ -312,11 +318,9 @@
                         url: 'ticketasignar/0?grid=asignar_tickets'
                     }).trigger('reloadGrid');
 
-                    Push.create("NUEVO TICKET", {
-                        body: message,
-                        icon: 'img/bus-home.png',
-                        timeout: 6000
-                    });
+                    var alerta = document.getElementById("alerta_mensaje");
+                    alerta.play();
+                    console.log(message);
                 });
             }
         </script>

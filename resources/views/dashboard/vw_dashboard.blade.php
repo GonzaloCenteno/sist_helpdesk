@@ -574,4 +574,19 @@
   </div>
 </div>-->
 </div>
+@section('page-js-script')
+<script>
+    if (variable == 1 || variable == 2)
+    {
+        var OneSignal = window.OneSignal || [];
+        OneSignal.push(function() {
+          OneSignal.init({
+            appId: "e15317a4-06ae-422c-919d-eade16bf4608",
+          });
+        });
+    }
+</script>
+@stop
 @endsection
+
+
