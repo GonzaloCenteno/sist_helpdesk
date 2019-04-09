@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Tbl_item;
 use Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\EvaluacionExport;
 
 class Item_Controller extends BaseSoapController
 {
@@ -20,19 +22,14 @@ class Item_Controller extends BaseSoapController
                 $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
                 $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
                 
-                $proveedores =& $this->traer_proveedores();
-                $marcas =& $this->traer_marcas();
-                $facturas =& $this->traer_facturas();
-                //dd($marcas);
-                if($proveedores['CODERR']=='00000' && $marcas['CODERR']=='00000' && $facturas['CODERR']=='00000')
+                $datos =& $this->traer_datos_item();
+                //dd($datos);
+                if($datos['CODERR']=='00000')
                 {
-                    $proveedor = $proveedores['PROVEEDOR'];
-                    $marca = $marcas['MARCA'];
-                    $factura = $facturas['FACTURA'];
-                    $num_pro = $proveedores['NUMTIC'];
-                    $num_mar = $marcas['NUMTIC'];
-                    $num_fac = $facturas['NUMTIC'];
-                    return view('inventario/vw_item',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','proveedor','marca','factura','num_pro','num_mar','num_fac'));
+                    $nummar = $datos['NUMAR'];
+                    $numpro = $datos['NUMPRO'];
+                    $numfac = $datos['NUMFAC'];
+                    return view('inventario/vw_item',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','nummar','numpro','numfac','datos'));
                 }
 
                 echo "HUBO UN ERROR TRAENDO LOS DATOS";
@@ -64,73 +61,27 @@ class Item_Controller extends BaseSoapController
             {
                 return $this->crear_tabla_buscar_items($request);
             }
+            if ($request['show'] == 'evaluaciones') 
+            {
+                return $this->abrir_reporte_evaluaciones($request);
+            }
+            if ($request['show'] == 'evaluaciones_excel') 
+            {
+                return $this->abrir_reporte_evaluaciones_excel($request);
+            }
         }
     }
 
     public function create(Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
-        $this->service = InstanceSoapClient::init();
-
-        $xml = new \DomDocument('1.0', 'UTF-8'); 
-        $root = $xml->createElement('CROMOHELP'); 
-        $root = $xml->appendChild($root); 
-
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
-        $usuarioxml =$root->appendChild($usuarioxml);  
-        
-        $descripcionxml = $xml->createElement('DES', strtoupper($request['descripcion']));
-        $descripcionxml =$root->appendChild($descripcionxml);
-        
-        $seriexml = $xml->createElement('SER', strtoupper($request['serie']));
-        $seriexml =$root->appendChild($seriexml);
-        
-        $cantidadxml = $xml->createElement('CAN', $request['cantidad']);
-        $cantidadxml =$root->appendChild($cantidadxml);
-        
-        $precioxml = $xml->createElement('PRE', $request['precio']);
-        $precioxml =$root->appendChild($precioxml);
-        
-        $marcaxml = $xml->createElement('IDM', $request['id_marca']);
-        $marcaxml =$root->appendChild($marcaxml);
-        
-        $proovedorxml = $xml->createElement('IDP', $request['id_proveedor']);
-        $proovedorxml =$root->appendChild($proovedorxml);
-        
-        $facturaxml = $xml->createElement('FAC', $request['id_factura']);
-        $facturaxml =$root->appendChild($facturaxml);
-        
-        $fechaxml = $xml->createElement('FEC', date("d/m/Y", strtotime($request['fecha'])));
-        $fechaxml =$root->appendChild($fechaxml);
-
-        $xml->formatOutput = true;
-
-        $codigo = '020';
-        $trama = $xml->saveXML();
-//        dd($trama);
-
-        $parametros = [
-            "cod" =>$codigo,
-            "trama" => $trama
-        ];
-
-        $respuesta = $this->service->consulta($parametros);
-
-        $array2 = (array) $respuesta;
-        foreach ($array2 as &$valor2) 
+        if ($request['tipo'] == 1) 
         {
-            $xmlr2 = $valor2 ;
+            return $this->crear_items($request);
         }
-        $final2=strlen($xmlr2)-2;
-        $xmlr2=substr($xmlr2, 1, $final2);
-        $xmlr2=$xmlr2;
-        $datos = (array) @simplexml_load_string($xmlr2);
-        //dd($datos);
-        
-        return response()->json([
-            'respuesta' => $datos['CODERR'],
-            'mensaje' => $datos['MSGERR'],
-        ]);
+        if ($request['tipo'] == 2) 
+        {
+            return $this->crear_evaluacion($request);
+        }
     }
 
     public function edit($id_item,Request $request)
@@ -153,117 +104,6 @@ class Item_Controller extends BaseSoapController
     public function store(Request $request)
     {
         
-    }
-    
-    public function &traer_proveedores()
-    {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
-        $this->service = InstanceSoapClient::init();
-
-        $xml = new \DomDocument('1.0', 'UTF-8'); 
-        $root = $xml->createElement('CROMOHELP'); 
-        $root = $xml->appendChild($root); 
-
-        $usuariox = $xml->createElement('USU',session('nombre_usuario')); 
-        $usuariox =$root->appendChild($usuariox);
-        
-        $xml->formatOutput = true;
-
-        $codigo='038';
-        $trama = $xml->saveXML();   
-        //dd($trama);
-
-        $params = [
-            "cod" =>$codigo,
-            "trama" => $trama
-        ];
-        $response = $this->service->consulta($params);
-
-        $array2 = (array) $response;
-        foreach ($array2 as &$valor2) 
-        {
-            $xmlr2 = $valor2 ;
-        }
-        $final2=strlen($xmlr2)-2;
-        $xmlr2=substr($xmlr2, 1, $final2);
-        $xmlr2=$xmlr2;
-        $datos = (array) @simplexml_load_string($xmlr2);
-        
-        return $datos;
-    }
-    
-    public function &traer_marcas()
-    {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
-        $this->service = InstanceSoapClient::init();
-
-        $xml = new \DomDocument('1.0', 'UTF-8'); 
-        $root = $xml->createElement('CROMOHELP'); 
-        $root = $xml->appendChild($root); 
-
-        $usuariox = $xml->createElement('USU',session('nombre_usuario')); 
-        $usuariox =$root->appendChild($usuariox);
-        
-        $xml->formatOutput = true;
-
-        $codigo='037';
-        $trama = $xml->saveXML();   
-        //dd($trama);
-
-        $params = [
-            "cod" =>$codigo,
-            "trama" => $trama
-        ];
-        $response = $this->service->consulta($params);
-
-        $array2 = (array) $response;
-        foreach ($array2 as &$valor2) 
-        {
-            $xmlr2 = $valor2 ;
-        }
-        $final2=strlen($xmlr2)-2;
-        $xmlr2=substr($xmlr2, 1, $final2);
-        $xmlr2=$xmlr2;
-        $datos = (array) @simplexml_load_string($xmlr2);
-        
-        return $datos;
-    }
-    
-    public function &traer_facturas()
-    {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
-        $this->service = InstanceSoapClient::init();
-
-        $xml = new \DomDocument('1.0', 'UTF-8'); 
-        $root = $xml->createElement('CROMOHELP'); 
-        $root = $xml->appendChild($root); 
-
-        $usuariox = $xml->createElement('USU',session('nombre_usuario')); 
-        $usuariox =$root->appendChild($usuariox);
-        
-        $xml->formatOutput = true;
-
-        $codigo='039';
-        $trama = $xml->saveXML();   
-        //dd($trama);
-
-        $params = [
-            "cod" =>$codigo,
-            "trama" => $trama
-        ];
-        $response = $this->service->consulta($params);
-
-        $array2 = (array) $response;
-        foreach ($array2 as &$valor2) 
-        {
-            $xmlr2 = $valor2 ;
-        }
-        $final2=strlen($xmlr2)-2;
-        $xmlr2=substr($xmlr2, 1, $final2);
-        $xmlr2=$xmlr2;
-        $datos = (array) @simplexml_load_string($xmlr2);
-        
-        return $datos;
     }
     
     public function crear_tabla_items(Request $request)
@@ -353,6 +193,13 @@ class Item_Controller extends BaseSoapController
             }else{
                 $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
             }
+            
+            if ($datos['ITEM']->CALIF == 0) {
+                $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
+            }else{
+                $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+            }
+            
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['ITEM']->IDITEM),
                 trim($datos['ITEM']->DESITE),
@@ -367,6 +214,7 @@ class Item_Controller extends BaseSoapController
                 trim($datos['ITEM']->PREITE),   
                 trim($datos['ITEM']->FECITE),   
                 $nuevo,
+                $calificacion
             );  
             return response()->json($Lista);
         }
@@ -387,6 +235,11 @@ class Item_Controller extends BaseSoapController
                 }else{
                     $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
                 }
+                if ($Datos->CALIF == 0) {
+                    $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
+                }else{
+                    $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDITEM),
                     trim($Datos->DESITE),
@@ -401,6 +254,7 @@ class Item_Controller extends BaseSoapController
                     trim($Datos->PREITE),
                     trim($Datos->FECITE),
                     $nuevo,
+                    $calificacion
                 );  
             }
             return response()->json($Lista);
@@ -506,6 +360,11 @@ class Item_Controller extends BaseSoapController
             }else{
                 $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
             }
+            if ($datos['ITEM']->CALIF == 0) {
+                $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
+            }else{
+                $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+            }
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['ITEM']->IDITEM),
                 trim($datos['ITEM']->DESITE),
@@ -519,7 +378,8 @@ class Item_Controller extends BaseSoapController
                 trim($datos['ITEM']->FACITE),   
                 trim($datos['ITEM']->PREITE),   
                 trim($datos['ITEM']->FECITE),   
-                $nuevo
+                $nuevo,
+                $calificacion
             );  
             return response()->json($Lista);
         }
@@ -540,6 +400,11 @@ class Item_Controller extends BaseSoapController
                 }else{
                     $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
                 }
+                if ($Datos->CALIF == 0) {
+                    $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
+                }else{
+                    $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDITEM),
                     trim($Datos->DESITE),
@@ -554,6 +419,7 @@ class Item_Controller extends BaseSoapController
                     trim($Datos->PREITE),
                     trim($Datos->FECITE),
                     $nuevo,
+                    $calificacion
                 );  
             }
             return response()->json($Lista);
@@ -640,5 +506,312 @@ class Item_Controller extends BaseSoapController
         }
         return $id_item;
     }
+    
+    public function crear_items(Request $request)
+    {
+        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        $this->service = InstanceSoapClient::init();
 
+        $xml = new \DomDocument('1.0', 'UTF-8'); 
+        $root = $xml->createElement('CROMOHELP'); 
+        $root = $xml->appendChild($root); 
+
+        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml =$root->appendChild($usuarioxml);  
+        
+        $descripcionxml = $xml->createElement('DES', strtoupper($request['descripcion']));
+        $descripcionxml =$root->appendChild($descripcionxml);
+        
+        $seriexml = $xml->createElement('SER', strtoupper($request['serie']));
+        $seriexml =$root->appendChild($seriexml);
+        
+        $cantidadxml = $xml->createElement('CAN', $request['cantidad']);
+        $cantidadxml =$root->appendChild($cantidadxml);
+        
+        $precioxml = $xml->createElement('PRE', $request['precio']);
+        $precioxml =$root->appendChild($precioxml);
+        
+        $marcaxml = $xml->createElement('IDM', $request['id_marca']);
+        $marcaxml =$root->appendChild($marcaxml);
+        
+        $proovedorxml = $xml->createElement('IDP', $request['id_proveedor']);
+        $proovedorxml =$root->appendChild($proovedorxml);
+        
+        $facturaxml = $xml->createElement('FAC', $request['id_factura']);
+        $facturaxml =$root->appendChild($facturaxml);
+        
+        $fechaxml = $xml->createElement('FEC', date("d/m/Y", strtotime($request['fecha'])));
+        $fechaxml =$root->appendChild($fechaxml);
+
+        $xml->formatOutput = true;
+
+        $codigo = '020';
+        $trama = $xml->saveXML();
+        //        dd($trama);
+
+        $parametros = [
+            "cod" =>$codigo,
+            "trama" => $trama
+        ];
+
+        $respuesta = $this->service->consulta($parametros);
+
+        $array2 = (array) $respuesta;
+        foreach ($array2 as &$valor2) 
+        {
+            $xmlr2 = $valor2 ;
+        }
+        $final2=strlen($xmlr2)-2;
+        $xmlr2=substr($xmlr2, 1, $final2);
+        $xmlr2=$xmlr2;
+        $datos = (array) @simplexml_load_string($xmlr2);
+        //dd($datos);
+        
+        return response()->json([
+            'respuesta' => $datos['CODERR'],
+            'mensaje' => $datos['MSGERR'],
+        ]);
+    }
+    
+    public function crear_evaluacion(Request $request)
+    {
+        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        $this->service = InstanceSoapClient::init();
+
+        $xml = new \DomDocument('1.0', 'UTF-8'); 
+        $root = $xml->createElement('CROMOHELP'); 
+        $root = $xml->appendChild($root); 
+
+        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml =$root->appendChild($usuarioxml);  
+        
+        $iditemxml = $xml->createElement('ID', $request['id_item']);
+        $iditemxml =$root->appendChild($iditemxml);
+        
+        $fecsolxml = $xml->createElement('FECSOL', $request['fecsol_calif']);
+        $fecsolxml =$root->appendChild($fecsolxml);
+        
+        $fecentxml = $xml->createElement('FECENT', $request['fecent_calif']);
+        $fecentxml =$root->appendChild($fecentxml);
+        
+        $pprexml = $xml->createElement('PPRE', $request['ppre_calif']);
+        $pprexml =$root->appendChild($pprexml);
+        
+        $pcalxml = $xml->createElement('PCAL', $request['pcal_calif']);
+        $pcalxml =$root->appendChild($pcalxml);
+        
+        $pstokxml = $xml->createElement('PSTOK', $request['pstok_calif']);
+        $pstokxml =$root->appendChild($pstokxml);
+        
+        $pcrexml = $xml->createElement('PCRE', $request['pcre_calif']);
+        $pcrexml =$root->appendChild($pcrexml);
+        
+        $pdocxml = $xml->createElement('PDOC', $request['pdoc_calif']);
+        $pdocxml =$root->appendChild($pdocxml);
+
+        $xml->formatOutput = true;
+
+        $codigo = '051';
+        $trama = $xml->saveXML();
+        //        dd($trama);
+
+        $parametros = [
+            "cod" =>$codigo,
+            "trama" => $trama
+        ];
+
+        $respuesta = $this->service->consulta($parametros);
+
+        $array2 = (array) $respuesta;
+        foreach ($array2 as &$valor2) 
+        {
+            $xmlr2 = $valor2 ;
+        }
+        $final2=strlen($xmlr2)-2;
+        $xmlr2=substr($xmlr2, 1, $final2);
+        $xmlr2=$xmlr2;
+        $datos = (array) @simplexml_load_string($xmlr2);
+        //dd($datos);
+        
+        return response()->json([
+            'respuesta' => $datos['CODERR'],
+            'mensaje' => $datos['MSGERR'],
+        ]);
+    }
+    
+    public function abrir_reporte_evaluaciones(Request $request)
+    {
+        if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
+        {
+            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            $this->service = InstanceSoapClient::init();
+
+            $xml = new \DomDocument('1.0', 'UTF-8'); 
+            $root = $xml->createElement('CROMOHELP'); 
+            $root = $xml->appendChild($root); 
+
+            $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+            $usuarioxml =$root->appendChild($usuarioxml);  
+
+            $fecinixml = $xml->createElement('FECINI', $request['fecha_inicio']);
+            $fecinixml =$root->appendChild($fecinixml);
+            
+            $fecfinxml = $xml->createElement('FECFIN', $request['fecha_fin']);
+            $fecfinxml =$root->appendChild($fecfinxml);
+
+            $xml->formatOutput = true;
+
+            $codigo = '053';
+            $trama = $xml->saveXML();
+            //dd($trama);
+
+            $parametros = [
+                "cod" =>$codigo,
+                "trama" => $trama
+            ];
+
+            $respuesta = $this->service->consulta($parametros);
+
+            $array2 = (array) $respuesta;
+            foreach ($array2 as &$valor2) 
+            {
+                $xmlr2 = $valor2 ;
+            }
+            $final2=strlen($xmlr2)-2;
+            $xmlr2=substr($xmlr2, 1, $final2);
+            $xmlr2=$xmlr2;
+            $datos = (array) @simplexml_load_string($xmlr2);
+            //dd($datos['CALIFICACION']);
+            if($datos['CODERR'] == "00000")
+            {
+                if ($datos['NUMTIC'] != 0) 
+                {
+                    $calificacion = $datos['CALIFICACION'];
+                    $view = \View::make('inventario.reportes.vw_evaluaciones',compact('calificacion'))->render();
+                    $pdf = \App::make('dompdf.wrapper');
+                    $pdf->loadHTML($view)->setPaper('a4','landscape');
+                    return $pdf->stream("EVALUACION DE PROVEEDORES".".pdf");
+                }
+                else
+                {
+                    return "NO SE ENCONTRARON DATOS";
+                }
+            }
+            else
+            {
+                return $datos['MSGERR'];
+            }
+        }
+        else
+        {
+            return view('errors/vw_sin_acceso');
+        }  
+    }
+    
+    public function &traer_datos_item()
+    {
+        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        $this->service = InstanceSoapClient::init();
+
+        $xml = new \DomDocument('1.0', 'UTF-8'); 
+        $root = $xml->createElement('CROMOHELP'); 
+        $root = $xml->appendChild($root); 
+
+        $usuariox = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuariox =$root->appendChild($usuariox);  
+
+        $ipx=$xml->createElement('NIVEL',session('rol')); 
+        $ipx =$root->appendChild($ipx); 
+
+        $xml->formatOutput = true;
+
+        $c2='055';
+        $t = $xml->saveXML();   
+
+        $params = [
+            "cod" =>$c2,
+            "trama" => $t
+        ];
+        $response = $this->service->consulta($params);
+
+        $array2 = (array) $response;
+        foreach ($array2 as &$valor2) 
+        {
+            $xmlr2 = $valor2 ;
+        }
+        $final2=strlen($xmlr2)-2;
+        $xmlr2=substr($xmlr2, 1, $final2);
+        $xmlr2=$xmlr2;
+        $datos = (array) @simplexml_load_string($xmlr2);
+        
+        return $datos;
+    }
+    
+    public function abrir_reporte_evaluaciones_excel(Request $request)
+    {
+        if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
+        {
+            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            $this->service = InstanceSoapClient::init();
+
+            $xml = new \DomDocument('1.0', 'UTF-8'); 
+            $root = $xml->createElement('CROMOHELP'); 
+            $root = $xml->appendChild($root); 
+
+            $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+            $usuarioxml =$root->appendChild($usuarioxml);  
+
+            $fecinixml = $xml->createElement('FECINI', $request['fecha_inicio']);
+            $fecinixml =$root->appendChild($fecinixml);
+            
+            $fecfinxml = $xml->createElement('FECFIN', $request['fecha_fin']);
+            $fecfinxml =$root->appendChild($fecfinxml);
+
+            $xml->formatOutput = true;
+
+            $codigo = '053';
+            $trama = $xml->saveXML();
+            //dd($trama);
+
+            $parametros = [
+                "cod" =>$codigo,
+                "trama" => $trama
+            ];
+
+            $respuesta = $this->service->consulta($parametros);
+
+            $array2 = (array) $respuesta;
+            foreach ($array2 as &$valor2) 
+            {
+                $xmlr2 = $valor2 ;
+            }
+            $final2=strlen($xmlr2)-2;
+            $xmlr2=substr($xmlr2, 1, $final2);
+            $xmlr2=$xmlr2;
+            $datos = (array) @simplexml_load_string($xmlr2);
+            //dd($datos['CALIFICACION']);
+            if($datos['CODERR'] == "00000")
+            {
+                if ($datos['NUMTIC'] != 0) 
+                {
+                    $calificacion = $datos['CALIFICACION'];
+                    return Excel::download(new EvaluacionExport($calificacion), 'EVALUACIÓN DE PROVEEDORES.xlsx');
+                    \PhpOffice\PhpWord\Shared\Html::addHtml($section, $doc->saveHtml(),true);
+                }
+                else
+                {
+                    return "NO SE ENCONTRARON DATOS";
+                }
+            }
+            else
+            {
+                return $datos['MSGERR'];
+            }
+        }
+        else
+        {
+            return view('errors/vw_sin_acceso');
+        }
+    }
+    
 }

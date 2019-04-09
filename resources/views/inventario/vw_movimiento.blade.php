@@ -76,8 +76,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-12">
                         <label for="mdl_mitem" class="fw-500">SELECCIONE UN ITEM:</label>
-                        <div class="text-center" id="select_item_m"><input type="hidden" id="id_item"><label id="desc_item_m" class="fw-500"></label></div>
-                        <select id="mdl_mitem" onchange="select_item();" class="form-control" style="width: 100%;">
+                        <select id="mdl_mitem" class="form-control" style="width: 100%;">
                             @if($num_ite == 1)
                                 <option value="{{ $item->IDIT }}"> {{ $item->DPIT }} - {{ $item->SEIT }} </option>
                             @else
@@ -89,8 +88,7 @@
                     </div>
                     <div class="form-group col-md-12">
                         <label for="mdl_pvt_origen" class="fw-500">SELECCIONE UN PUNTO DE VENTA - (ORIGEN):</label>
-                        <div class="text-center" id="select_pvt_o"><input type="hidden" id="id_pvt_o"><label id="desc_pvt_o" class="fw-500"></label></div>
-                        <select id="mdl_pvt_origen" onchange="select_ptv_o();" class="form-control" style="width: 100%;">
+                        <select id="mdl_pvt_origen" class="form-control" style="width: 100%;">
                             @foreach($punto_venta as $pvt_o)
                                 <option value="{{ $pvt_o->IDPVT }}"> {{ $pvt_o->DPVT }} </option>
                             @endforeach
@@ -98,8 +96,7 @@
                     </div>
                     <div class="form-group col-md-12">
                         <label for="mdl_pvt_destino" class="fw-500">SELECCIONE UN PUNTO DE VENTA - (DESTINO):</label>
-                        <div class="text-center" id="select_pvt_d"><input type="hidden" id="id_pvt_d"><label id="desc_pvt_d" class="fw-500"></label></div>
-                        <select id="mdl_pvt_destino" onchange="select_ptv_d();" class="form-control" style="width: 100%;">
+                        <select id="mdl_pvt_destino" class="form-control" style="width: 100%;">
                             @foreach($punto_venta as $pvt_d)
                                 <option value="{{ $pvt_d->IDPVT }}"> {{ $pvt_d->DPVT }} </option>
                             @endforeach
@@ -107,7 +104,7 @@
                     </div>
                     <div class="form-group col-md-12">
                         <label for="mdl_fecha" class="fw-500">FECHA:</label>
-                        <input type="text" class="form-control start-date rounded text-center" id="mdl_mfecha" placeholder="SELECCIONAR UNA FECHA" name="mdl_mfecha" data-dateformat='mm/dd/yy' data-mask="99/99/9999" value="<?php echo date("m/d/Y"); ?>" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
+                        <input type="text" class="form-control start-date rounded text-center" id="mdl_mfecha" placeholder="SELECCIONAR UNA FECHA" name="mdl_mfecha" data-dateformat='mm/dd/yy' data-mask="99/99/9999" value="<?php echo date("d-m-Y"); ?>" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
                     </div>
                 </div>
             </div>

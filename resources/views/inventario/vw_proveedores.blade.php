@@ -70,7 +70,19 @@
                     </div>
                     <div class="form-group col-md-12">
                         <label for="mdl_contacto" class="fw-500">CONTACTO:</label>
-                        <input type="text" class="form-control text-center text-uppercase rounded" id="mdl_contacto" name="mdl_contacto" placeholder="NOMBRE CONTACTO" autocomplete="off">
+                        <input type="text" class="form-control text-center text-uppercase rounded" id="mdl_contacto" name="mdl_contacto" placeholder="ESCRIBIR NOMBRE CONTACTO" autocomplete="off">
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label for="mdl_contacto" class="fw-500">DIRECCION:</label>
+                        <input type="text" class="form-control text-center text-uppercase rounded" id="mdl_direccion" name="mdl_direccion" placeholder="ESCRIBIR DIRECCION" autocomplete="off">
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label for="mdl_contacto" class="fw-500">SERVICIO:</label>
+                        <input type="text" class="form-control text-center text-uppercase rounded" id="mdl_servicio" name="mdl_servicio" placeholder="ESCRIBIR PRODUCTO/SERVICIO" autocomplete="off">
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label for="mdl_contacto" class="fw-500">CORREO:</label>
+                        <input type="email" class="form-control text-center text-uppercase rounded" id="mdl_correo" name="mdl_correo" placeholder="ESCRIBIR CORREO ELECTRONICO" autocomplete="off">
                     </div>
                 </div>
             </div>

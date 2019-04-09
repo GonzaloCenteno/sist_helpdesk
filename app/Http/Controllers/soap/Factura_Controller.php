@@ -71,6 +71,9 @@ class Factura_Controller extends BaseSoapController
         $fechaxml = $xml->createElement('FEC', date("d/m/Y", strtotime($request['fecha'])));
         $fechaxml =$root->appendChild($fechaxml);
         
+        $monedaxml = $xml->createElement('MONE', $request['moneda']);
+        $monedaxml =$root->appendChild($monedaxml);
+        
         $productoxml = $xml->createElement('PRO', $request['id_producto']);
         $productoxml =$root->appendChild($productoxml);
 
@@ -131,6 +134,9 @@ class Factura_Controller extends BaseSoapController
         $fechaxml = $xml->createElement('FEC', date("d/m/Y", strtotime($request['fecha'])));
         $fechaxml =$root->appendChild($fechaxml);
         
+        $monedaxml = $xml->createElement('MONE', $request['moneda']);
+        $monedaxml =$root->appendChild($monedaxml);
+        
         $productoxml = $xml->createElement('PRO', $request['id_producto']);
         $productoxml =$root->appendChild($productoxml);
 
@@ -171,7 +177,60 @@ class Factura_Controller extends BaseSoapController
 
     public function store(Request $request)
     {
-        
+        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        $this->service = InstanceSoapClient::init();
+
+        $xml = new \DomDocument('1.0', 'UTF-8'); 
+        $root = $xml->createElement('CROMOHELP'); 
+        $root = $xml->appendChild($root); 
+
+        $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+        $usuariox = $root->appendChild($usuariox);  
+
+        $idfactxml = $xml->createElement('IDFACT',$request['id_factura']); 
+        $idfactxml = $root->appendChild($idfactxml);
+
+        if($request->hasFile('file'))
+        {
+            $nombre = $request->file->getClientOriginalName();
+            $ruta = $request->file->storeAs('public/Facturas',date('Y-m-d'). '_' . uniqid(). '_' .$nombre);
+            $facimgxml = $xml->createElement('FACIMG',$ruta); 
+            $facimgxml = $root->appendChild($facimgxml);
+        } 
+        else
+        {
+            $facimgxml = $xml->createElement('FACIMG','-'); 
+            $facimgxml =$root->appendChild($facimgxml);
+        }
+
+        $xml->formatOutput = true;
+
+        $codigo = '052';
+        $trama = $xml->saveXML();
+
+        //dd($trama);
+
+        $parametros = [
+            "cod" =>$codigo,
+            "trama" => $trama
+        ];
+
+        $respuesta = $this->service->consulta($parametros);
+        $array2 = (array) $respuesta;
+        foreach ($array2 as &$valor2) 
+        {
+            $xmlr2 = $valor2 ;
+        }
+        $final2=strlen($xmlr2)-2;
+        $xmlr2=substr($xmlr2, 1, $final2);
+        $xmlr2=$xmlr2;
+        $datos = simplexml_load_string($xmlr2);
+        //dd($datos);
+
+        return response()->json([
+            'respuesta' => $datos->CODERR[0],
+            'mensaje' => $datos->MSGERR[0],
+        ]);
     }
     
     public function traer_datos($sist_id,$rol_id)
@@ -306,6 +365,16 @@ class Factura_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['FACTURA']->IDFAC;
+            if ($datos['FACTURA']->FACIMG == '-') {
+                $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-folder-open"></i> Subir</button>';
+            }else{
+                $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+            }
+            if ($datos['FACTURA']->FACMON == 0) {
+                $moneda = '<label>S/</label>';
+            }else{
+                $moneda = '<label>$</label>';
+            }
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['FACTURA']->IDFAC),
                 trim($datos['FACTURA']->SERIE),
@@ -313,7 +382,10 @@ class Factura_Controller extends BaseSoapController
                 trim($datos['FACTURA']->MONTO),
                 trim($datos['FACTURA']->FECFAC),
                 trim($datos['FACTURA']->IDPRO),
-                trim($datos['FACTURA']->DESPRO),   
+                trim($datos['FACTURA']->DESPRO),
+                trim($datos['FACTURA']->FACMON),
+                $moneda,
+                $archivo
             );  
             return response()->json($Lista);
         }
@@ -329,6 +401,16 @@ class Factura_Controller extends BaseSoapController
         {
            foreach ($datos['FACTURA'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDFAC;
+                if ($Datos->FACIMG == '-') {
+                    $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Subir</button>';
+                }else{
+                    $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                }
+                if ($Datos->FACMON == 0) {
+                    $moneda = '<label>S/</label>';
+                }else{
+                    $moneda = '<label>$</label>';
+                }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDFAC),
                     trim($Datos->SERIE),
@@ -337,6 +419,8 @@ class Factura_Controller extends BaseSoapController
                     trim($Datos->FECFAC),
                     trim($Datos->IDPRO),
                     trim($Datos->DESPRO),
+                    trim($Datos->FACMON),
+                    $archivo
                 );  
             }
             return response()->json($Lista);
@@ -434,6 +518,16 @@ class Factura_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['FACTURA']->IDFAC;
+            if ($datos['FACTURA']->FACIMG == '-') {
+                $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-folder-open"></i> Subir</button>';
+            }else{
+                $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+            }
+            if ($datos['FACTURA']->FACMON == 0) {
+                $moneda = '<label>S/</label>';
+            }else{
+                $moneda = '<label>$</label>';
+            }
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['FACTURA']->IDFAC),
                 trim($datos['FACTURA']->SERIE),
@@ -441,7 +535,10 @@ class Factura_Controller extends BaseSoapController
                 trim($datos['FACTURA']->MONTO),
                 trim($datos['FACTURA']->FECFAC),
                 trim($datos['FACTURA']->IDPRO),
-                trim($datos['FACTURA']->DESPRO),   
+                trim($datos['FACTURA']->DESPRO),
+                trim($datos['FACTURA']->FACMON),
+                $moneda,
+                $archivo
             );  
             return response()->json($Lista);
         }
@@ -457,6 +554,16 @@ class Factura_Controller extends BaseSoapController
         {
            foreach ($datos['FACTURA'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDFAC;
+                if ($Datos->FACIMG == '-') {
+                    $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Subir</button>';
+                }else{
+                    $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                }
+                if ($Datos->FACMON == 0) {
+                    $moneda = '<label>S/</label>';
+                }else{
+                    $moneda = '<label>$</label>';
+                }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDFAC),
                     trim($Datos->SERIE),
@@ -465,6 +572,9 @@ class Factura_Controller extends BaseSoapController
                     trim($Datos->FECFAC),
                     trim($Datos->IDPRO),
                     trim($Datos->DESPRO),
+                    trim($Datos->FACMON),
+                    $moneda,
+                    $archivo
                 );  
             }
             return response()->json($Lista);

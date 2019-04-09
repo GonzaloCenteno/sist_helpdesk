@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Tbl_proveedor;
 use Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProveedorExport;
+
 
 class Proveedor_Controller extends BaseSoapController
 {
@@ -52,6 +55,14 @@ class Proveedor_Controller extends BaseSoapController
             {
                 return $this->validar_buscar_proveedores($request);
             }
+            if ($request['show'] == 'lista_proveedores') 
+            {
+                return $this->abrir_reporte_lista_proveedores($request);
+            }
+            if ($request['show'] == 'lista_proveedores_excel') 
+            {
+                return $this->abrir_reporte_lista_proveedores_excel($request);
+            }
         }
     }
 
@@ -78,6 +89,15 @@ class Proveedor_Controller extends BaseSoapController
         
         $contactoxml = $xml->createElement('CON', strtoupper($request['contacto']));
         $contactoxml =$root->appendChild($contactoxml);
+        
+        $direccionxml = $xml->createElement('DIR', strtoupper($request['direccion']));
+        $direccionxml =$root->appendChild($direccionxml);
+        
+        $servicioxml = $xml->createElement('SER', strtoupper($request['servicio']));
+        $servicioxml =$root->appendChild($servicioxml);
+        
+        $correoxml = $xml->createElement('COR', strtoupper($request['correo']));
+        $correoxml =$root->appendChild($correoxml);
 
         $xml->formatOutput = true;
 
@@ -224,6 +244,9 @@ class Proveedor_Controller extends BaseSoapController
                 trim($datos['PROVEEDOR']->RUCPRO),
                 trim($datos['PROVEEDOR']->TELPRO),
                 trim($datos['PROVEEDOR']->CONPRO),
+                trim($datos['PROVEEDOR']->DIRPRO),
+                trim($datos['PROVEEDOR']->SERVPRO),
+                trim($datos['PROVEEDOR']->CORRPRO),
                 $nuevo,    
             );  
             return response()->json($Lista);
@@ -251,6 +274,9 @@ class Proveedor_Controller extends BaseSoapController
                     trim($Datos->RUCPRO),
                     trim($Datos->TELPRO),
                     trim($Datos->CONPRO),
+                    trim($Datos->DIRPRO),
+                    trim($Datos->SERVPRO),
+                    trim($Datos->CORRPRO),
                     $nuevo,
                 );  
             }
@@ -284,6 +310,15 @@ class Proveedor_Controller extends BaseSoapController
         
         $contactoxml = $xml->createElement('CON', strtoupper($request['contacto']));
         $contactoxml =$root->appendChild($contactoxml);
+        
+        $direccionxml = $xml->createElement('DIR', strtoupper($request['direccion']));
+        $direccionxml =$root->appendChild($direccionxml);
+        
+        $servicioxml = $xml->createElement('SER', strtoupper($request['servicio']));
+        $servicioxml =$root->appendChild($servicioxml);
+        
+        $correoxml = $xml->createElement('COR', strtoupper($request['correo']));
+        $correoxml =$root->appendChild($correoxml);
 
         $xml->formatOutput = true;
 
@@ -436,6 +471,9 @@ class Proveedor_Controller extends BaseSoapController
                 trim($datos['PROVEEDOR']->RUCPRO),
                 trim($datos['PROVEEDOR']->TELPRO),
                 trim($datos['PROVEEDOR']->CONPRO),
+                trim($datos['PROVEEDOR']->DIRPRO),
+                trim($datos['PROVEEDOR']->SERVPRO),
+                trim($datos['PROVEEDOR']->CORRPRO),
                 $nuevo,    
             );  
             return response()->json($Lista);
@@ -463,10 +501,135 @@ class Proveedor_Controller extends BaseSoapController
                     trim($Datos->RUCPRO),
                     trim($Datos->TELPRO),
                     trim($Datos->CONPRO),
+                    trim($Datos->DIRPRO),
+                    trim($Datos->SERVPRO),
+                    trim($Datos->CORRPRO),
                     $nuevo,
                 );  
             }
             return response()->json($Lista);
+        }
+    }
+    
+    public function abrir_reporte_lista_proveedores(Request $request)
+    {
+        if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
+        {
+            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            $this->service = InstanceSoapClient::init();
+
+            $xml = new \DomDocument('1.0', 'UTF-8'); 
+            $root = $xml->createElement('CROMOHELP'); 
+            $root = $xml->appendChild($root); 
+
+            $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+            $usuarioxml =$root->appendChild($usuarioxml);  
+
+            $fecinixml = $xml->createElement('FECINI', $request['fecha_inicio']);
+            $fecinixml =$root->appendChild($fecinixml);
+            
+            $fecfinxml = $xml->createElement('FECFIN', $request['fecha_fin']);
+            $fecfinxml =$root->appendChild($fecfinxml);
+
+            $xml->formatOutput = true;
+
+            $codigo = '054';
+            $trama = $xml->saveXML();
+            //dd($trama);
+
+            $parametros = [
+                "cod" =>$codigo,
+                "trama" => $trama
+            ];
+
+            $respuesta = $this->service->consulta($parametros);
+
+            $array2 = (array) $respuesta;
+            foreach ($array2 as &$valor2) 
+            {
+                $xmlr2 = $valor2 ;
+            }
+            $final2=strlen($xmlr2)-2;
+            $xmlr2=substr($xmlr2, 1, $final2);
+            $xmlr2=$xmlr2;
+            $datos = (array) @simplexml_load_string($xmlr2);
+            //dd($datos['PROVEEDOR']);
+            if($datos['CODERR'] == "00000")
+            {
+                $proveedores = $datos['PROVEEDOR'];
+                $view = \View::make('inventario.reportes.vw_listar_proveedores',compact('proveedores'))->render();
+                $pdf = \App::make('dompdf.wrapper');
+                $pdf->loadHTML($view)->setPaper('a4','landscape');
+                return $pdf->stream("LISTA DE PROVEEDORES".".pdf");
+            }
+            else
+            {
+                return $datos['MSGERR'];
+            }
+        }
+        else
+        {
+            return view('errors/vw_sin_acceso');
+        }
+    }
+    
+    public function abrir_reporte_lista_proveedores_excel(Request $request)
+    {
+        if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
+        {
+            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            $this->service = InstanceSoapClient::init();
+
+            $xml = new \DomDocument('1.0', 'UTF-8'); 
+            $root = $xml->createElement('CROMOHELP'); 
+            $root = $xml->appendChild($root); 
+
+            $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+            $usuarioxml =$root->appendChild($usuarioxml);  
+
+            $fecinixml = $xml->createElement('FECINI', $request['fecha_inicio']);
+            $fecinixml =$root->appendChild($fecinixml);
+            
+            $fecfinxml = $xml->createElement('FECFIN', $request['fecha_fin']);
+            $fecfinxml =$root->appendChild($fecfinxml);
+
+            $xml->formatOutput = true;
+
+            $codigo = '054';
+            $trama = $xml->saveXML();
+            //dd($trama);
+
+            $parametros = [
+                "cod" =>$codigo,
+                "trama" => $trama
+            ];
+
+            $respuesta = $this->service->consulta($parametros);
+
+            $array2 = (array) $respuesta;
+            foreach ($array2 as &$valor2) 
+            {
+                $xmlr2 = $valor2 ;
+            }
+            $final2=strlen($xmlr2)-2;
+            $xmlr2=substr($xmlr2, 1, $final2);
+            $xmlr2=$xmlr2;
+            $datos = (array) @simplexml_load_string($xmlr2);
+            //dd($datos['PROVEEDOR']);
+            if($datos['CODERR'] == "00000")
+            {
+                $proveedores = $datos['PROVEEDOR'];
+                return Excel::download(new ProveedorExport($proveedores), 'LISTA DE PROVEEDORES.xlsx');
+                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $doc->saveHtml(),true);
+            }
+            else
+            {
+                return $datos['MSGERR'];
+            }
+        }
+        else
+        {
+            return view('errors/vw_sin_acceso');
         }
     }
 

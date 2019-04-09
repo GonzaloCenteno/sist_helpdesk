@@ -61,20 +61,14 @@ jQuery(document).ready(function($){
 function limpiar_datos_movimiento()
 {
     var now = new Date();
-    var today = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+    var today =  now.getDate() + '/' + (now.getMonth() + 1) + '/' + now.getFullYear();
     $('#mdl_mfecha').val(today);
-    $("#mdl_mitem").select2("val", "1");
-    $("#mdl_pvt_origen").select2("val", "1");
-    $("#mdl_pvt_destino").select2("val", "1");
 }
 
 jQuery(document).on("click", "#btn_nuevo_movimiento", function(){
     $('#titulo_movimiento').text('CREAR NUEVO MOVIMIENTO');
     $('#btn_guardar_movimiento').show();
     $('#btn_actualizar_movimiento').hide();
-    $('#select_item_m').hide();
-    $('#select_pvt_o').hide();
-    $('#select_pvt_d').hide();
     limpiar_datos_movimiento();
 })
 
@@ -135,17 +129,14 @@ jQuery(document).on("click", "#btn_modificar_movimiento", function(){
         $('#btn_guardar_movimiento').hide();
         $('#btn_actualizar_movimiento').show();
         
-        $('#select_item_m').show();
-        $('#id_item').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_item'));
-        $('#desc_item_m').text('ITEM ACTUAL: ' + $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'item_id'));
+        $('#mdl_mitem').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_item'));
+        $('#mdl_mitem').change();
         
-        $('#select_pvt_o').show();
-        $('#id_pvt_o').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_ori'));
-        $('#desc_pvt_o').text('PUNTO DE VENTA ORIGEN: ' + $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'pvt_ori'));
+        $('#mdl_pvt_origen').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_ori'));
+        $('#mdl_pvt_origen').change();
         
-        $('#select_pvt_d').show();
-        $('#id_pvt_d').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_des'));
-        $('#desc_pvt_d').text('PUNTO DE VENTA DESTINO: ' + $('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'pvt_des'));
+        $('#mdl_pvt_destino').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_des'));
+        $('#mdl_pvt_destino').change();
         
         $('#mdl_mfecha').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'mov_fec'));
 
@@ -155,21 +146,6 @@ jQuery(document).on("click", "#btn_modificar_movimiento", function(){
     }
     
 })
-
-function select_item()
-{
-    $('#id_item').val($('#mdl_mitem').val());
-}
-
-function select_ptv_o()
-{
-    $('#id_pvt_o').val($('#mdl_pvt_origen').val());
-}
-
-function select_ptv_d()
-{
-    $('#id_pvt_d').val($('#mdl_pvt_destino').val());
-}
 
 jQuery(document).on("click", "#btn_actualizar_movimiento", function(){
     
@@ -185,9 +161,9 @@ jQuery(document).on("click", "#btn_actualizar_movimiento", function(){
         type: 'GET',
         data:
         {
-            id_item: $("#id_item").val(),
-            pvt_origen: $("#id_pvt_o").val(),
-            pvt_destino: $("#id_pvt_d").val(),
+            id_item: $("#mdl_mitem").val(),
+            pvt_origen: $("#mdl_pvt_origen").val(),
+            pvt_destino: $("#mdl_pvt_destino").val(),
             fecha: $('#mdl_mfecha').val(),
             tipo:1
         },

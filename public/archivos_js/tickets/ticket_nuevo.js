@@ -7,7 +7,7 @@ jQuery(document).ready(function($){
 function limpiar_datos()
 {
     var now = new Date();
-    var today = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+    var today =  now.getDate() + '/' + (now.getMonth() + 1) + '/' + now.getFullYear();
     $('#cbxtipo').val('0');
     $('#cbxarea').val('0');
     $('#cbxpri').val('0');

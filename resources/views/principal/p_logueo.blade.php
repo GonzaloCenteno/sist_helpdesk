@@ -121,6 +121,8 @@
           }, false);
         }, false);
       })();
+      
+      $("#usuario").focus();
     </script>
     
     @yield('page-js-script')

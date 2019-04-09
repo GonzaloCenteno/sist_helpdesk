@@ -8,15 +8,18 @@ jQuery(document).ready(function($){
         sortable:false,
         pgbuttons: false,
         pgtext: null,
-        colNames: ['ID', 'RAZON SOCIAL', 'RUC', 'TELEFONO', 'CONTACTO', 'ESTADO'],
-        rowNum: 10, sortname: 'pro_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_proveedor" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE PROVEEDORES -', align: "center",
+        colNames: ['ID', 'RAZON SOCIAL', 'RUC', 'TELEFONO', 'CONTACTO', 'DIRECCION', 'SERVICIO', 'CORREO', 'ESTADO'],
+        rowNum: 10, sortname: 'pro_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_proveedor" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> | <div class="btn-group"><button type="button" class="btn btn-primary"><i class="fa fa-print"></i> LISTA PROVEEDORES</button><button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><div class="dropdown-menu" role="menu"><button id="btn_imp_list_prov_pdf" type="button" class="btn btn-danger btn-block btn-lg"><i class="fa fa-file-pdf-o"></i> IMPRIMIR PDF</button><div class="dropdown-divider"></div><button id="btn_imp_lis_prov_excel" type="button" class="btn btn-success btn-block btn-lg"><i class="fa fa-file-excel-o"></i> IMPRIMIR EXCEL</button></div></div> - LISTA DE PROVEEDORES -', align: "center",
         colModel: [
             {name: 'pro_id', index: 'pro_id', align: 'left',width: 10, hidden:true},
             {name: 'pro_raz', index: 'pro_raz', align: 'left', width: 30},
-            {name: 'pro_ruc', index: 'pro_ruc', align: 'center', width: 20},
-            {name: 'pro_tel', index: 'pro_tel', align: 'center', width: 12},
-            {name: 'pro_con', index: 'pro_con', align: 'left', width: 30},
-            {name: 'pro_est', index: 'pro_est', align: 'center', width: 12}
+            {name: 'pro_ruc', index: 'pro_ruc', align: 'center', width: 8},
+            {name: 'pro_tel', index: 'pro_tel', align: 'center', width: 8},
+            {name: 'pro_con', index: 'pro_con', align: 'left', width: 10},
+            {name: 'pro_dir', index: 'pro_dir', align: 'left', width: 20},
+            {name: 'pro_serv', index: 'pro_serv', align: 'left', width: 10},
+            {name: 'pro_correo', index: 'pro_correo', align: 'left', width: 12},
+            {name: 'pro_est', index: 'pro_est', align: 'center', width: 10}
         ],
         pager: '#paginador_tabla_proveedores',
         rowList: [10, 20, 30, 40, 50, 100000000],
@@ -52,6 +55,9 @@ function limpiar_datos_proveedor()
     $('#mdl_ruc').val('');
     $('#mdl_telefono').val('');
     $('#mdl_contacto').val('');
+    $('#mdl_direccion').val('');
+    $('#mdl_servicio').val('');
+    $('#mdl_correo').val('');
 }
 
 jQuery(document).on("click", "#btn_nuevo_proveedor", function(){
@@ -83,7 +89,10 @@ jQuery(document).on("click", "#btn_guardar_proveedor", function(){
             razon_social: $('#mdl_razon_social').val(),
             ruc: $('#mdl_ruc').val(),
             telefono: $('#mdl_telefono').val() || '-',
-            contacto: $('#mdl_contacto').val() || '-'
+            contacto: $('#mdl_contacto').val() || '-',
+            direccion: $('#mdl_direccion').val() || '-',
+            servicio: $('#mdl_servicio').val() || '-',
+            correo: $('#mdl_correo').val() || '-',
         },
         beforeSend:function()
         {            
@@ -129,6 +138,9 @@ jQuery(document).on("click", "#btn_modificar_proveedor", function(){
         $('#mdl_ruc').val($('#tabla_proveedores').jqGrid ('getCell', id_proveedor, 'pro_ruc'));
         $('#mdl_telefono').val($('#tabla_proveedores').jqGrid ('getCell', id_proveedor, 'pro_tel'));
         $('#mdl_contacto').val($('#tabla_proveedores').jqGrid ('getCell', id_proveedor, 'pro_con'));
+        $('#mdl_direccion').val($('#tabla_proveedores').jqGrid ('getCell', id_proveedor, 'pro_dir'));
+        $('#mdl_servicio').val($('#tabla_proveedores').jqGrid ('getCell', id_proveedor, 'pro_serv'));
+        $('#mdl_correo').val($('#tabla_proveedores').jqGrid ('getCell', id_proveedor, 'pro_correo'));
         
     }else{
         mostraralertasconfoco("NO HAY NINGUN PROVEEDOR SELECCIONADO","#tabla_proveedores");
@@ -159,6 +171,9 @@ jQuery(document).on("click", "#btn_actualizar_proveedor", function(){
             ruc: $('#mdl_ruc').val(),
             telefono: $('#mdl_telefono').val() || '-',
             contacto: $('#mdl_contacto').val() || '-',
+            direccion: $('#mdl_direccion').val() || '-',
+            servicio: $('#mdl_servicio').val() || '-',
+            correo: $('#mdl_correo').val() || '-',
             tipo:1
         },
         beforeSend:function()
@@ -272,4 +287,12 @@ jQuery(document).on("click", "#btn_act_table_proveedor", function(){
     }).trigger('reloadGrid');
     
     $("#txt_razon_social").val('');
-})
+});
+
+jQuery(document).on("click","#btn_imp_list_prov_pdf", function(){
+    window.open('proveedor/0?show=lista_proveedores'); 
+});
+
+jQuery(document).on("click", "#btn_imp_lis_prov_excel", function(){
+    window.open('proveedor/0?show=lista_proveedores_excel'); 
+});
