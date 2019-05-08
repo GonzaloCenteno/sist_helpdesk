@@ -20,7 +20,7 @@ function MensajeConfirmacion(texto){
     swal({
       type: 'success',
       title: texto,
-      timer: 1200,
+      timer: 700,
       allowOutsideClick: false,
       allowEscapeKey:false,
       showConfirmButton: false,

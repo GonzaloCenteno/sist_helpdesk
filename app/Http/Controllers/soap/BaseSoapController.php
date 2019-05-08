@@ -8,8 +8,8 @@ class BaseSoapController extends Controller
     protected static $wsdl;
     public function __construct() {
     }
-    public static function setWsdl($service) {
-        return self::$wsdl = $service;
+    public static function setWsdl() {
+        return self::$wsdl = 'http://10.1.0.29:81/WSCromoHelp/services/Cls_Listen?wsdl';
     }
     public static function getWsdl(){
         return self::$wsdl;

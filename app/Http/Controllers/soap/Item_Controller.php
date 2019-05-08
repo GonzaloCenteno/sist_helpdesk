@@ -118,7 +118,7 @@ class Item_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -273,7 +273,50 @@ class Item_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            if(isset($request["descripcion"]))
+            {
+                $descripcion = strtoupper(trim($request['descripcion']));
+            }
+            else
+            {
+                $descripcion = "";
+            }
+            if(isset($request["serie"]))
+            {
+                $serie = strtoupper(trim($request['serie']));
+            }    
+            else
+            {
+                $serie = "";
+            }
+            if(isset($request["fecha_desde"]) && isset($request["fecha_hasta"]))
+            {
+                $fdesde = $request['fecha_desde'];
+                $fhasta = $request['fecha_hasta'].' 23:59:00';
+            }    
+            else
+            {
+                $fdesde = "";
+                $fhasta = "";
+            }
+            
+            $where="WHERE 1=1";
+            if($descripcion!='')
+            {
+                $where.= " AND item_desc LIKE '%$descripcion%'";
+            }
+                    
+            if($serie!='')
+            {
+                $where.= " AND coalesce(fac.fact_serie||'-'||fac.fact_num) LIKE '%$serie%'";
+            }
+            
+            if($fdesde!='' && $fhasta!='')
+            {
+                $where.= " AND item_fec between '$fdesde' and '$fhasta'";
+            }
+        
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -284,19 +327,10 @@ class Item_Controller extends BaseSoapController
             $usuariox =$root->appendChild($usuariox);  
             
             $rolxml = $xml->createElement('NIVEL',session('rol'));
-            $rolxml =$root->appendChild($rolxml);  
+            $rolxml =$root->appendChild($rolxml);
             
-            $descripcionxml = $xml->createElement('DES', strtoupper($request['descripcion']));
-            $descripcionxml =$root->appendChild($descripcionxml);
-            
-            $seriexml = $xml->createElement('FAC', strtoupper($request['serie']));
-            $seriexml =$root->appendChild($seriexml);
-            
-            $fecinixml = $xml->createElement('FECINI',date("d/m/Y", strtotime($request['fecha_desde'])));
-            $fecinixml =$root->appendChild($fecinixml);  
-            
-            $fecfinxml = $xml->createElement('FECFIN',date("d/m/Y", strtotime($request['fecha_hasta'])).' 23:59:00');
-            $fecfinxml =$root->appendChild($fecfinxml);
+            $wherexml = $xml->createElement('WHERE', $where);
+            $wherexml =$root->appendChild($wherexml);
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
             $orderby1 =$root->appendChild($orderby1);  
@@ -428,7 +462,7 @@ class Item_Controller extends BaseSoapController
     
     public function editar_datos_item($id_item, Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -453,6 +487,9 @@ class Item_Controller extends BaseSoapController
         $precioxml = $xml->createElement('PRE', $request['precio']);
         $precioxml =$root->appendChild($precioxml);
         
+        $precio1xml = $xml->createElement('PRE1', $request['old_precio']);
+        $precio1xml =$root->appendChild($precio1xml);
+        
         $proveedorxml = $xml->createElement('IDP', $request['id_proveedor']);
         $proveedorxml =$root->appendChild($proveedorxml);
         
@@ -462,7 +499,7 @@ class Item_Controller extends BaseSoapController
         $facturaxml = $xml->createElement('FAC', $request['id_factura']);
         $facturaxml =$root->appendChild($facturaxml);
         
-        $fechaxml = $xml->createElement('FEC', date("d/m/Y", strtotime($request['fecha'])));
+        $fechaxml = $xml->createElement('FEC', $request['fecha']);
         $fechaxml =$root->appendChild($fechaxml);
 
         $xml->formatOutput = true;
@@ -509,7 +546,7 @@ class Item_Controller extends BaseSoapController
     
     public function crear_items(Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -540,7 +577,7 @@ class Item_Controller extends BaseSoapController
         $facturaxml = $xml->createElement('FAC', $request['id_factura']);
         $facturaxml =$root->appendChild($facturaxml);
         
-        $fechaxml = $xml->createElement('FEC', date("d/m/Y", strtotime($request['fecha'])));
+        $fechaxml = $xml->createElement('FEC', $request['fecha']);
         $fechaxml =$root->appendChild($fechaxml);
 
         $xml->formatOutput = true;
@@ -575,7 +612,7 @@ class Item_Controller extends BaseSoapController
     
     public function crear_evaluacion(Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -643,7 +680,7 @@ class Item_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
         {
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -710,7 +747,7 @@ class Item_Controller extends BaseSoapController
     
     public function &traer_datos_item()
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -751,7 +788,7 @@ class Item_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
         {
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 

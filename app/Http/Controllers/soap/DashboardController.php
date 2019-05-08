@@ -61,7 +61,7 @@ class DashboardController extends BaseSoapController
     
     public function &recuperar_datos()
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 

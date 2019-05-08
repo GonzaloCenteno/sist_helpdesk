@@ -198,16 +198,6 @@ jQuery(document).on("click", "#btn_actualizar_movimiento", function(){
 
 jQuery(document).on("click", "#btn_buscar_movimiento", function(){   
     
-    if ($('#txt_fecha_desde').val() == '') {
-        mostraralertasconfoco('* EL CAMPO FECHA DESDE ES OBLIGATORIO...', '#txt_fecha_desde');
-        return false;
-    }
-    
-    if ($('#txt_fecha_hasta').val() == '') {
-        mostraralertasconfoco('* EL CAMPO FECHA HASTA ES OBLIGATORIO...', '#txt_fecha_hasta');
-        return false;
-    }
-    
     jQuery("#tabla_movimientos").jqGrid('setGridParam', {
         url: 'movimientos/0?grid=buscar_movimientos&descripcion='+$('#txt_descripcion_item').val()+'&fecha_desde='+$('#txt_fecha_desde').val()+'&fecha_hasta='+$('#txt_fecha_hasta').val()
     }).trigger('reloadGrid');

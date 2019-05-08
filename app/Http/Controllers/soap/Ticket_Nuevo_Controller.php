@@ -68,7 +68,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         
         if ($validator->passes()) 
         {
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -87,7 +87,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
             $prx=$xml->createElement('PRI',$request['cbxpri']); 
             $prx =$root->appendChild($prx);
 
-            $fex=$xml->createElement('FEC',date("d/m/Y", strtotime($request['txfecha']))); 
+            $fex=$xml->createElement('FEC',$request['txfecha']); 
             $fex =$root->appendChild($fex);
 
             $ttx=$xml->createElement('TIT', strtoupper($request['intitulo'])); 
@@ -220,7 +220,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
     
     public function &traer_datos()
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 

@@ -73,7 +73,7 @@ jQuery(document).on("click", "#btn_enviar_datos", function(){
                 limpiar_datos();
                 MensajeConfirmacion(data.mensaje[0] + ' ' + data.texto);
             }
-            else if(data.respuesta[0] == '99999')
+            else if(data.respuesta[0] == '90001')
             {
                 MensajeAdvertencia(data.mensaje[0]);
             }

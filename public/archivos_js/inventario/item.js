@@ -136,6 +136,10 @@ jQuery(document).on("click", "#btn_guardar_item", function(){
                     url: 'items/0?grid=items'
                 }).trigger('reloadGrid');
             }
+            else if (data.respuesta == '90002') 
+            {
+                MensajeAdvertencia(data.mensaje);
+            }
             else
             {
                 MensajeAdvertencia('OCURRIO UN PROBLEMA AL ENVIAR LA INFORMACION');
@@ -222,6 +226,7 @@ jQuery(document).on("click", "#btn_actualizar_item", function(){
             serie: $('#mdl_iserie').val(),
             cantidad: $('#mdl_icantidad').val(),
             precio: $('#mdl_iprecio').val(),
+            old_precio: $('#tabla_items').jqGrid ('getCell', id_item, 'item_prec'),
             id_proveedor: $("#mdl_iproveedor").val(),
             id_marca: $("#mdl_imarca").val(),
             id_factura: $("#mdl_ifactura").val(),
@@ -242,6 +247,10 @@ jQuery(document).on("click", "#btn_actualizar_item", function(){
                     url: 'items/0?grid=items'
                 }).trigger('reloadGrid');
             }
+            else if (data.respuesta == '90002') 
+            {
+                MensajeAdvertencia(data.mensaje);
+            }
             else
             {
                 MensajeAdvertencia('OCURRIO UN PROBLEMA AL ENVIAR LA INFORMACION');
@@ -258,16 +267,6 @@ jQuery(document).on("click", "#btn_actualizar_item", function(){
 })
 
 jQuery(document).on("click", "#btn_buscar_item", function(){   
-    
-    if ($('#txt_fecha_desde').val() == '') {
-        mostraralertasconfoco('* EL CAMPO FECHA DESDE ES OBLIGATORIO...', '#txt_fecha_desde');
-        return false;
-    }
-    
-    if ($('#txt_fecha_hasta').val() == '') {
-        mostraralertasconfoco('* EL CAMPO FECHA HASTA ES OBLIGATORIO...', '#txt_fecha_hasta');
-        return false;
-    }
     
     jQuery("#tabla_items").jqGrid('setGridParam', {
         url: 'items/0?grid=buscar_items&serie='+$('#txt_serie').val()+'&descripcion='+$('#txt_descripcion').val()+'&fecha_desde='+$('#txt_fecha_desde').val()+'&fecha_hasta='+$('#txt_fecha_hasta').val()

@@ -49,7 +49,7 @@
                                     <div class="input-group-addon bgc-white bd bdwR-0">
                                         <i class="ti-calendar"></i>
                                     </div>
-                                    <input type="text" class="form-control start-date rounded" id="txfecha" placeholder="SELECCIONAR UNA FECHA" name="txfecha" data-dateformat='mm/dd/yy' data-mask="99/99/9999" value="<?php echo date("d/m/Y"); ?>" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
+                                    <input type="text" class="form-control start-date rounded" id="txfecha" placeholder="SELECCIONAR UNA FECHA" name="txfecha" data-dateformat='dd/mm/yy' data-mask="99/99/9999" value="<?php echo date("d/m/Y"); ?>" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
                                 </div>
                             </div>
                         </div>

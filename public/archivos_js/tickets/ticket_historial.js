@@ -37,102 +37,12 @@ jQuery(document).ready(function($){
 });
 
 jQuery(document).on("click", "#btn_buscar_historial", function(){
-    if ($('#fecha_desde_ht').val() == '') {
-        mostraralertasconfoco('* EL CAMPO FECHA DESDE ES OBLIGATORIO...', '#fecha_desde_ht');
-        return false;
-    }
-    if ($('#fecha_hasta_ht').val() == '') {
-        mostraralertasconfoco('* EL CAMPO FECHA HASTA ES OBLIGATORIO...', '#fecha_hasta_ht');
-        return false;
-    }
-          
+   
     jQuery("#tabla_historial_tickets").jqGrid('setGridParam', {
         url: 'tickethistorial/0?grid=buscar_tickets&titulo='+$('#titulo_ht').val()+'&fecha_desde='+$('#fecha_desde_ht').val()+'&fecha_hasta='+$('#fecha_hasta_ht').val()
     }).trigger('reloadGrid');
         
 })
-
-function ver_ticket_historial(id_ticket)
-{
-    
-    $.ajax({
-        url: 'tickethistorial/'+id_ticket+'?show=traer_ticket',
-        type: 'GET',
-        beforeSend:function()
-        {            
-            MensajeEspera('RECUPERANDO INFORMACION...');  
-        },
-        success: function(data) 
-        {
-            if (data.salida == '00000') 
-            {
-                $('#btn_abrir_modal_historial').click();
-                html="";
-    //            console.log(data.datos);
-                $('#mdl_titulo').text(data.asunto);
-                $('#mdl_estado').text(data.estado);
-                $('#mdl_tipo').text(data.tipo);
-                $('#mdl_area').text(data.area);
-                $('#mdl_prioridad').text(data.prioridad);
-                $('#mdl_fecha_creacion_cab').text(data.fecha_creacion);
-                $('#mdl_fecha_actualizacion').text(data.fecha_actualizada);
-
-                if (data.respuesta == 1) 
-                {
-                    if (data.datos.ARCH != '-') 
-                    {
-                        html = html+'<div class="form-group col-md-12"><label for="titulo" class="fw-500">PERTENECE A:</label><label class="bdc-grey-200"><b> '+data.datos.USUNOM+' </b></label></div>\n\
-                                <div class="form-group col-md-12"><label for="titulo" class="fw-500">DESCRIPCION:</label><label class="form-control bdc-grey-200">'+data.datos.TEXT+'</label></div>\n\
-                                <div class="form-group col-md-6"><label for="titulo" class="fw-500">FECHA CREACION:</label><label class="bdc-grey-200">'+data.datos.FECCRE+'</label></div>\n\
-                                <div class="form-group col-md-6"><a class="btn btn-danger btn-sm btn-block" style="text-decoration: none;" href=descargar/'+data.datos.IDRESP+' ><span class="btn-label"><i class="fa fa-print"></i></span> DESCARGAR</a></div>';
-                    }
-                    else
-                    {
-                        html = html+'<div class="form-group col-md-12"><label for="titulo" class="fw-500">PERTENECE A:</label><label class="bdc-grey-200"><b> '+data.datos.USUNOM+' </b></label></div>\n\
-                                <div class="form-group col-md-12"><label for="titulo" class="fw-500">DESCRIPCION:</label><label class="form-control bdc-grey-200">'+data.datos.TEXT+'</label></div>\n\
-                                <div class="form-group col-md-6"><label for="titulo" class="fw-500">FECHA CREACION:</label><label class="bdc-grey-200">'+data.datos.FECCRE+'</label></div>';
-                    }
-                }
-                else
-                {
-                    for(i=0;i<data.datos.length;i++)
-                    {
-                        if (data.datos[i].ARCH != '-') 
-                        {
-                            html = html+'<div class="form-group col-md-12"><label for="titulo" class="fw-500">PERTENECE A:</label><label class="bdc-grey-200"><b> '+data.datos[i].USUNOM+' </b></label></div>\n\
-                                    <div class="form-group col-md-12"><label for="titulo" class="fw-500">DESCRIPCION:</label><label class="form-control bdc-grey-200">'+data.datos[i].TEXT+'</label></div>\n\
-                                    <div class="form-group col-md-6"><label for="titulo" class="fw-500">FECHA CREACION:</label><label class="bdc-grey-200">'+data.datos[i].FECCRE+'</label></div>\n\
-                                    <div class="form-group col-md-6"><a class="btn btn-danger btn-sm btn-block" style="text-decoration: none;" href=descargar/'+data.datos[i].IDRESP+' ><span class="btn-label"><i class="fa fa-print"></i></span> DESCARGAR</a></div>';
-                        }
-                        else
-                        {
-                            html = html+'<div class="form-group col-md-12"><label for="titulo" class="fw-500">PERTENECE A:</label><label class="bdc-grey-200"><b> '+data.datos[i].USUNOM+ '</b></label></div>\n\
-                                    <div class="form-group col-md-12"><label for="titulo" class="fw-500">DESCRIPCION:</label><label class="form-control bdc-grey-200">'+data.datos[i].TEXT+'</label></div>\n\
-                                    <div class="form-group col-md-6"><label for="titulo" class="fw-500">FECHA CREACION:</label><label class="bdc-grey-200">'+data.datos[i].FECCRE+'</label></div>';
-                        }
-                    }
-                }
-                $('.modal-body').scrollTop(0);
-                $("#detalle").html(html);
-                swal.close();
-            }
-            else if(data == '90006')
-            {
-                MensajeAdvertencia('SE DEBE ASIGNAR PRIMERO EL TICKET');
-            }
-            else
-            {
-                MensajeAdvertencia('NO SE PUDO OBTENER RESPUESTA');
-                console.log(data);
-            }
-        },
-        error: function(data) {
-            MensajeAdvertencia("hubo un error, Comunicar al Administrador");
-            console.log('error');
-            console.log(data);
-        }
-    });
-}
 
 jQuery(document).on("click", "#btn_act_table_tickets_historial", function(){
     jQuery("#tabla_historial_tickets").jqGrid('setGridParam', {

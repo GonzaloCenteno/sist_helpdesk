@@ -83,7 +83,7 @@ class Ticket_Historial_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -203,8 +203,37 @@ class Ticket_Historial_Controller extends BaseSoapController
         if ($start < 0) {
             $start = 0;
         }
+            
+            if(isset($request["titulo"]))
+            {
+                $titulo = strtoupper(trim($request['titulo']));
+            }
+            else
+            {
+                $titulo = "";
+            }
+            if(isset($request["fecha_desde"]) && isset($request["fecha_hasta"]))
+            {
+                $fdesde = $request['fecha_desde'];
+                $fhasta = $request['fecha_hasta'].' 23:59:00';
+            }    
+            else
+            {
+                $fdesde = "";
+                $fhasta = "";
+            }
+            
+            $where="";
+            if($titulo!='')
+            {
+                $where.= " AND cab.cabt_asunto LIKE '%$titulo%'";
+            }
+            if($fdesde!='' && $fhasta!='')
+            {
+                $where.= " AND cab.cabt_feccre between '$fdesde' and '$fhasta'";
+            }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -217,14 +246,8 @@ class Ticket_Historial_Controller extends BaseSoapController
             $rolxml = $xml->createElement('NIVEL',session('rol'));
             $rolxml =$root->appendChild($rolxml);
             
-            $tituloxml = $xml->createElement('TIT', strtoupper($request['titulo']));
-            $tituloxml =$root->appendChild($tituloxml);  
-            
-            $fecinixml = $xml->createElement('FECINI',date("d/m/Y", strtotime($request['fecha_desde'])));
-            $fecinixml =$root->appendChild($fecinixml);  
-            
-            $fecfinxml = $xml->createElement('FECFIN',date("d/m/Y", strtotime($request['fecha_hasta'])).' 23:59:00');
-            $fecfinxml =$root->appendChild($fecfinxml);  
+            $wherexml = $xml->createElement('WHERE', $where);
+            $wherexml =$root->appendChild($wherexml);
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
             $orderby1 =$root->appendChild($orderby1);  
@@ -322,7 +345,7 @@ class Ticket_Historial_Controller extends BaseSoapController
     
     public function recuperar_datos_ticket($id_ticket, Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 

@@ -223,16 +223,6 @@ jQuery(document).on("click", "#btn_actualizar_factura", function(){
 
 jQuery(document).on("click", "#btn_buscar_factura", function(){   
     
-    if ($('#txt_fecha_desde').val() == '') {
-        mostraralertasconfoco('* EL CAMPO FECHA DESDE ES OBLIGATORIO...', '#txt_fecha_desde');
-        return false;
-    }
-    
-    if ($('#txt_fecha_hasta').val() == '') {
-        mostraralertasconfoco('* EL CAMPO FECHA HASTA ES OBLIGATORIO...', '#txt_fecha_hasta');
-        return false;
-    }
-    
     jQuery("#tabla_facturas").jqGrid('setGridParam', {
         url: 'facturas/0?grid=buscar_facturas&serie_num='+$('#txt_serie_num').val()+'&fecha_desde='+$('#txt_fecha_desde').val()+'&fecha_hasta='+$('#txt_fecha_hasta').val()
     }).trigger('reloadGrid');
@@ -251,15 +241,15 @@ jQuery(document).on("click", "#btn_act_table_factura", function(){
 
 jQuery(document).on("click", "#btn_subir_archivo", function(){
     $('#titulo_new_archivo').text('SUBIR DOCUMENTOS');
-    $("#fl_archivo").val(''); 
+    $("#file").val(''); 
 });
 
 jQuery(document).on("click", "#btn_guardar_arcfactura", function(){
     
     id_factura = $('#tabla_facturas').jqGrid ('getGridParam', 'selrow');
     
-    if ($('#fl_archivo').val() == '') {
-        mostraralertasconfoco('* EL CAMPO ARCHIVO ES OBLIGATORIO...', '#fl_archivo');
+    if ($('#file').val() == '') {
+        mostraralertasconfoco('* EL CAMPO ARCHIVO ES OBLIGATORIO...', '#file');
         return false;
     }
     

@@ -68,7 +68,7 @@ class Proveedor_Controller extends BaseSoapController
 
     public function create(Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -163,7 +163,7 @@ class Proveedor_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -286,7 +286,7 @@ class Proveedor_Controller extends BaseSoapController
     
     public function editar_datos_proveedores($id_proveedor, Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -387,7 +387,7 @@ class Proveedor_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -515,7 +515,7 @@ class Proveedor_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
         {
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -577,7 +577,7 @@ class Proveedor_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
         {
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 

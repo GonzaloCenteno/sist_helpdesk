@@ -7,7 +7,7 @@
     {{ csrf_field() }}
     <div class="form-group {{ $errors->has('usuario') ? ' was-validated' : '' }}">
         <label class="text-normal text-dark">USUARIO</label>
-        <input type="text" class="form-control" id="usuario" name="usuario" placeholder="INGRESAR NOMBRE DE USUARIO" value="{{ old('usuario') }}">
+        <input type="text" class="form-control" id="usuario" name="usuario" placeholder="INGRESAR NOMBRE DE USUARIO" value="{{ old('usuario') }}" autocomplete="off">
         {!! $errors->first('usuario', '<span class="text-danger">:message</span>') !!}
     </div>
     

@@ -57,7 +57,7 @@ class Marca_Controller extends BaseSoapController
 
     public function create(Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -134,7 +134,7 @@ class Marca_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -245,7 +245,7 @@ class Marca_Controller extends BaseSoapController
     
     public function modificar_datos_marcas($id_marca, Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -328,7 +328,7 @@ class Marca_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 

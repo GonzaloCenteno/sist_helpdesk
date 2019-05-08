@@ -59,6 +59,75 @@
                     opacity: 0;
                 }
             }
+            
+            .texto-completo{
+                width: 640px;
+                /* Control de la altura con base en el texto del div*/
+                height: auto;
+                word-wrap: break-word;
+              }
+
+              ul.timeline1 {
+                  list-style-type: none;
+                  position: relative;
+              }
+              ul.timeline1:before {
+                  content: ' ';
+                  background: #7A7878;
+                  display: inline-block;
+                  position: absolute;
+                  left: 29px;
+                  width: 2px;
+                  height: 100%;
+                  z-index: 400;
+              }
+              ul.timeline1 > li {
+                  margin: 20px 0;
+                  padding-left: 20px;
+              }
+              ul.timeline1 > li:before {
+                  content: ' ';
+                  background: red;
+                  display: inline-block;
+                  position: absolute;
+                  border-radius: 60%;
+                  border: 3px solid red;
+                  left: 10px;
+                  width: 40px;
+                  height: 40px;
+                  z-index: 400;
+              }
+
+              ul.timeline2 {
+                  list-style-type: none;
+                  position: relative;
+              }
+              ul.timeline2:before {
+                  content: ' ';
+                  background: #7A7878;
+                  display: inline-block;
+                  position: absolute;
+                  left: 29px;
+                  width: 2px;
+                  height: 100%;
+                  z-index: 400;
+              }
+              ul.timeline2 > li {
+                  margin: 20px 0;
+                  padding-left: 20px;
+              }
+              ul.timeline2 > li:before {
+                  content: ' ';
+                  background: #FAA937;
+                  display: inline-block;
+                  position: absolute;
+                  border-radius: 50%;
+                  border: 3px solid #FAA937;
+                  left: 10px;
+                  width: 40px;
+                  height: 40px;
+                  z-index: 400;
+              }
         </style>
 
         <link href="{{ asset('css/style.css') }}" rel="stylesheet">
@@ -302,6 +371,7 @@
         </script>
 
         <script>
+            var tecnico = {!! DB::table('cromohelp.tbl_tecnico')->pluck('tec_user'); !!}
             var variable = {!! session('rol') !!};
             //alert(variable);
             var pusher = new Pusher('d8966da1d9f626630fe1', {

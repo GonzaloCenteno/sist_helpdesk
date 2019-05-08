@@ -49,7 +49,7 @@ class Factura_Controller extends BaseSoapController
 
     public function create(Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -68,7 +68,7 @@ class Factura_Controller extends BaseSoapController
         $montoxml = $xml->createElement('MON', $request['monto']);
         $montoxml =$root->appendChild($montoxml);
         
-        $fechaxml = $xml->createElement('FEC', date("d/m/Y", strtotime($request['fecha'])));
+        $fechaxml = $xml->createElement('FEC', $request['fecha']);
         $fechaxml =$root->appendChild($fechaxml);
         
         $monedaxml = $xml->createElement('MONE', $request['moneda']);
@@ -109,7 +109,7 @@ class Factura_Controller extends BaseSoapController
 
     public function edit($id_factura,Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -131,7 +131,7 @@ class Factura_Controller extends BaseSoapController
         $montoxml = $xml->createElement('MON', $request['monto']);
         $montoxml =$root->appendChild($montoxml);
         
-        $fechaxml = $xml->createElement('FEC', date("d/m/Y", strtotime($request['fecha'])));
+        $fechaxml = $xml->createElement('FEC', $request['fecha']);
         $fechaxml =$root->appendChild($fechaxml);
         
         $monedaxml = $xml->createElement('MONE', $request['moneda']);
@@ -177,7 +177,7 @@ class Factura_Controller extends BaseSoapController
 
     public function store(Request $request)
     {
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -238,7 +238,7 @@ class Factura_Controller extends BaseSoapController
         $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
         $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
         $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-        self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+        self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
         $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -295,7 +295,7 @@ class Factura_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -420,6 +420,7 @@ class Factura_Controller extends BaseSoapController
                     trim($Datos->IDPRO),
                     trim($Datos->DESPRO),
                     trim($Datos->FACMON),
+                    $moneda,
                     $archivo
                 );  
             }
@@ -439,7 +440,38 @@ class Factura_Controller extends BaseSoapController
             $start = 0;
         }
         
-            self::setWsdl('http://10.1.4.250:8080/WSCromoHelp/services/Cls_Listen?wsdl');
+            if(isset($request["serie_num"]))
+            {
+                $serie_num = strtoupper(trim($request['serie_num']));
+            }
+            else
+            {
+                $serie_num = "";
+            }
+            if(isset($request["fecha_desde"]) && isset($request["fecha_hasta"]))
+            {
+                $fdesde = $request['fecha_desde'];
+                $fhasta = $request['fecha_hasta'].' 23:59:00';
+            }    
+            else
+            {
+                $fdesde = "";
+                $fhasta = "";
+            }
+            
+            $where="WHERE 1=1";
+            if($serie_num!='')
+            {
+                $where.= " AND coalesce(fac.fact_serie||'-'||fac.fact_num) LIKE '%$serie_num%'";
+            }
+                    
+            
+            if($fdesde!='' && $fhasta!='')
+            {
+                $where.= " AND fact_fec between '$fdesde' and '$fhasta'";
+            }
+        
+            self::setWsdl();
             $this->service = InstanceSoapClient::init();
 
             $xml = new \DomDocument('1.0', 'UTF-8'); 
@@ -452,14 +484,8 @@ class Factura_Controller extends BaseSoapController
             $rolxml = $xml->createElement('NIVEL',session('rol'));
             $rolxml =$root->appendChild($rolxml);  
             
-            $serienumxml = $xml->createElement('FACT', strtoupper($request['serie_num']));
-            $serienumxml =$root->appendChild($serienumxml);
-            
-            $fecinixml = $xml->createElement('FECINI',date("d/m/Y", strtotime($request['fecha_desde'])));
-            $fecinixml =$root->appendChild($fecinixml);  
-            
-            $fecfinxml = $xml->createElement('FECFIN',date("d/m/Y", strtotime($request['fecha_hasta'])).' 23:59:00');
-            $fecfinxml =$root->appendChild($fecfinxml);
+            $wherexml = $xml->createElement('WHERE', $where);
+            $wherexml =$root->appendChild($wherexml);
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
             $orderby1 =$root->appendChild($orderby1);  
