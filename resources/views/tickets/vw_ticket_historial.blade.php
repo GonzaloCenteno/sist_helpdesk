@@ -117,7 +117,7 @@ hr {
                 </div>
             </div>
             <div class="modal-footer">
-                @if(session('rol') == 1 || session('rol') == 2)
+                @if(session('sro_id') == 1 || session('sro_id') == 2)
                     <button type="button" class="btn btn-success" data-toggle="modal" data-target="#Modal_Info_Encuesta" data-backdrop="static" data-keyboard="false" id="btn_ver_info_encuesta">VER RESULTADO ENCUESTA</button>
                 @else
                 @endif
@@ -159,6 +159,8 @@ hr {
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/tickets/ticket_historial.js') }}"></script>
 <script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
 function ver_ticket_historial(id_ticket)
 {
     $.ajax({

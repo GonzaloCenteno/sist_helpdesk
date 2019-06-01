@@ -22,12 +22,25 @@
                     <div class="form-group col-md-2" style="padding-top: 29px;">
                         <button id="btn_buscar_proveedor" class="btn btn-danger btn-block" type="button"><i class="fa fa-search"></i> BUSCAR</button>
                     </div>
-                    <div class="form-group col-md-2" style="padding-top: 29px;">
-                        <button id="btn_nuevo_proveedor" data-toggle="modal" data-target="#Modal_Proveedor" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
-                    </div>
-                    <div class="form-group col-md-2" style="padding-top: 29px;">
-                        <button id="btn_modificar_proveedor" class="btn btn-block" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
-                    </div>
+                    @if( $permiso[0]->btn_new == 1 )
+                        <div class="form-group col-md-2" style="padding-top: 29px;">
+                            <button id="btn_nuevo_proveedor" data-toggle="modal" data-target="#Modal_Proveedor" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        </div>
+                    @else
+                        <div class="form-group col-md-2" style="padding-top: 29px;">
+                            <button onclick="sin_permiso();" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        </div>
+                    @endif
+                    @if( $permiso[0]->btn_edit == 1 )
+                        <button style="display:none;" id="btn_nuevo_proveedor" data-toggle="modal" data-target="#Modal_Proveedor" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        <div class="form-group col-md-2" style="padding-top: 29px;">
+                            <button id="btn_modificar_proveedor" class="btn btn-block" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        </div>
+                    @else
+                        <div class="form-group col-md-2" style="padding-top: 29px;">
+                            <button class="btn btn-block" onclick="sin_permiso();" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="form-row">
@@ -98,5 +111,70 @@
 
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/inventario/proveedores.js') }}"></script>
+<script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+    jQuery(document).ready(function($){
+    
+        jQuery("#tabla_proveedores").jqGrid({
+            url: 'proveedor/0?grid=proveedores',
+            datatype: 'json', mtype: 'GET',
+            height: '450px', autowidth: true,
+            toolbarfilter: true,
+            sortable:false,
+            pgbuttons: false,
+            pgtext: null,
+            colNames: ['ID', 'RAZON SOCIAL', 'RUC', 'TELEFONO', 'CONTACTO', 'DIRECCION', 'SERVICIO', 'CORREO', 'ESTADO'],
+            rowNum: 10, sortname: 'pro_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_proveedor" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE PROVEEDORES -', align: "center",
+            colModel: [
+                {name: 'pro_id', index: 'pro_id', align: 'left',width: 10, hidden:true},
+                {name: 'pro_raz', index: 'pro_raz', align: 'left', width: 30},
+                {name: 'pro_ruc', index: 'pro_ruc', align: 'center', width: 8},
+                {name: 'pro_tel', index: 'pro_tel', align: 'center', width: 8},
+                {name: 'pro_con', index: 'pro_con', align: 'left', width: 10},
+                {name: 'pro_dir', index: 'pro_dir', align: 'left', width: 20},
+                {name: 'pro_serv', index: 'pro_serv', align: 'left', width: 10},
+                {name: 'pro_correo', index: 'pro_correo', align: 'left', width: 12},
+                {name: 'pro_est', index: 'pro_est', align: 'center', width: 10}
+            ],
+            pager: '#paginador_tabla_proveedores',
+            rowList: [10, 20, 30, 40, 50, 100000000],
+            loadComplete: function() {
+                $("option[value=100000000]").text('TODOS');
+            },
+            gridComplete: function () {
+                    var idarray = jQuery('#tabla_proveedores').jqGrid('getDataIDs');
+                    if (idarray.length > 0) {
+                    var firstid = jQuery('#tabla_proveedores').jqGrid('getDataIDs')[0];
+                            $("#tabla_proveedores").setSelection(firstid);    
+                        }
+                },
+            onSelectRow: function (Id){},
+            ondblClickRow: function (Id)
+            {
+                permiso = {!! json_encode($permiso[0]->btn_edit) !!};
+                if(permiso == 1)
+                {
+                    $('#btn_modificar_proveedor').click();
+                }
+                else
+                {
+                    sin_permiso();
+                }
+            }
+        });
+
+        $(window).on('resize.jqGrid', function () {
+            $("#tabla_proveedores").jqGrid('setGridWidth', $("#contenedor").width());
+        });
+
+        $("#txt_razon_social").keypress(function (e) {
+            if (e.which == 13) {
+                $('#btn_buscar_proveedor').click();
+            }
+        });
+
+    });
+</script>
 @stop
 @endsection

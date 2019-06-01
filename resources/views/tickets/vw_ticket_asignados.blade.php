@@ -123,7 +123,7 @@ hr {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_cerrar_modal">CERRAR VENTANA</button>
-                @if(session('rol') == 1 || session('rol') == 2)
+                @if(session('sro_id') == 1 || session('sro_id') == 2)
                     <button type="button" class="btn btn-danger" id="btn_rechazar_ticket">RECHAZAR TICKET</button>
                 @else
                 @endif
@@ -138,6 +138,8 @@ hr {
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/tickets/ticket_asignados.js') }}"></script>
 <script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
 function ver_ticket_asignados(id_ticket)
 {
     CKEDITOR.instances['mdl_nueva_descripcion'].setData('INGRESAR UNA DESCRIPCION');

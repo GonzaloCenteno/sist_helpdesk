@@ -9,10 +9,7 @@
     <div class='d-f jc-c fxd-c'>
         <h1 class='mB-30 fw-900 lh-1 c-red-500' style="font-size: 60px;">ACCESO DENEGADO</h1>
         <h3 class='mB-10 fsz-lg c-grey-900 tt-c'>NO TIENE PERMISOS PARA VER ESTA SECCION</h3>
-        <p class='mB-30 fsz-def c-grey-700'>Favor de Contactarse con el Administrador</p>
-        <div>
-          <a href="{{ url()->previous() }}" type='primary' class='btn btn-primary btn-lg btn-block'>REGRESAR A LA PAGINA ANTERIOR</a>
-        </div>
+        <p class='mB-30 fsz-def c-grey-700'>FAVOR DE CONTACTARSE CON EL ADMINISTRADOR</p>
     </div>
 </div>
 @endsection

@@ -47,8 +47,19 @@
                     </div>
                     <div class="form-group col-md-3" style="padding-top: 29px;">                    
                         <button id="btn_buscar_item" class="btn btn-danger" type="button"><i class="fa fa-search"></i> BUSCAR</button>
-                        <button id="btn_nuevo_item" data-toggle="modal" data-target="#Modal_Item" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
-                        <button id="btn_modificar_item" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @if( $permiso[0]->btn_new == 1 )
+                            <button id="btn_nuevo_item" data-toggle="modal" data-target="#Modal_Item" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        @else
+                            <button onclick="sin_permiso();" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        @endif
+                        @if( $permiso[0]->btn_edit == 1 )
+                            <button style="display:none;" id="btn_nuevo_item" data-toggle="modal" data-target="#Modal_Item" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                            <button id="btn_modificar_item" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @else
+                            <button onclick="sin_permiso();" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @endif
+                        
+                        
                     </div>
                 </div>
 
@@ -266,52 +277,84 @@
     </div>
 </div>
 
-<!-- MODAL IMPRIMIR ITEM -->
-<div class="modal fade" id="Modal_Imprimir_Item" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="titulo_modal_imprimir"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-row" id="FormularioRdbtn">
-                    <div class="form-group col-md-6">
-                        <label class="fw-500">FECHA INICIO:</label>
-                        <div class="timepicker-input input-icon form-group">
-                            <div class="input-group">
-                                <div class="input-group-addon bgc-white bd bdwR-0">
-                                    <i class="ti-calendar"></i>
-                                </div>
-                                <input type="text" class="form-control start-date rounded" id="txt_print_fec_inicio" placeholder="SELECCIONAR FECHA INICIO" name="txt_fecha_solicitud" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label class="fw-500">FECHA FIN:</label>
-                        <div class="timepicker-input input-icon form-group">
-                            <div class="input-group">
-                                <div class="input-group-addon bgc-white bd bdwR-0">
-                                    <i class="ti-calendar"></i>
-                                </div>
-                                <input type="text" class="form-control start-date rounded" id="txt_print_fec_fin" placeholder="SELECCIONAR FECHA FIN" name="txt_fecha_entrega" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="btn_imp_eva_prov_pdf"><i class="fa fa-file-pdf-o"></i> IMPRIMIR PDF</button>
-                <button type="button" class="btn btn-success" id="btn_imp_eva_prov_excel"><i class="fa fa-file-excel-o"></i> IMPRIMIR EXCEL</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_cerrar_modal_report"><i class="fa fa-times"></i> CERRAR VENTANA</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/inventario/item.js') }}"></script>
+<script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+    jQuery(document).ready(function($){
+    
+        jQuery("#tabla_items").jqGrid({
+            url: 'items/0?grid=items',
+            datatype: 'json', mtype: 'GET',
+            height: '450px', autowidth: true,
+            toolbarfilter: true,
+            sortable:false,
+            pgbuttons: false,
+            pgtext: null,
+            //cmTemplate: { sortable: false },
+            colNames: ['ID', 'DESCRIPCION', 'SERIE', 'CANT.', 'IDMARCA', 'MARCA','IDPROVEEODR', 'PROVEE.','IDFACTURA', 'FACTURA','PRECIO','FECHA','ESTADO','EVALUACION'],
+            rowNum: 10, sortname: 'item_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_item" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE ITEMS -', align: "center",
+            colModel: [
+                {name: 'item_id', index: 'item_id', align: 'left',width: 10, hidden:true},
+                {name: 'item_desc', index: 'item_desc', align: 'left', width: 25},
+                {name: 'item_ser', index: 'item_ser', align: 'center', width: 15},
+                {name: 'item_cant', index: 'item_cant', align: 'center', width: 10},
+                {name: 'id_marca', index: 'id_marca', align: 'center', width: 20, hidden:true},
+                {name: 'mar_id', index: 'mar_id', align: 'left', width: 20},
+                {name: 'id_proveedor', index: 'id_proveedor', align: 'left', width: 10, hidden:true},
+                {name: 'pro_id', index: 'pro_id', align: 'left', width: 20},
+                {name: 'id_factura', index: 'id_factura', align: 'left', width: 10, hidden:true},
+                {name: 'fact_id', index: 'fact_id', align: 'center', width: 20},
+                {name: 'item_prec', index: 'item_prec', align: 'center', width: 10},
+                {name: 'item_fec', index: 'item_fec', align: 'center', width: 10},
+                {name: 'item_est', index: 'item_est', align: 'center', width: 10},
+                {name: 'id_calif', index: 'id_calif', align: 'center', width: 12}
+            ],
+            pager: '#paginador_tabla_items',
+            rowList: [10, 20, 30, 40, 50, 100000000],
+            loadComplete: function() {
+                $("option[value=100000000]").text('TODOS');
+            },
+            gridComplete: function () {
+                    var idarray = jQuery('#tabla_items').jqGrid('getDataIDs');
+                    if (idarray.length > 0) {
+                    var firstid = jQuery('#tabla_items').jqGrid('getDataIDs')[0];
+                            $("#tabla_items").setSelection(firstid);    
+                        }
+                },
+            onSelectRow: function (Id){},
+            ondblClickRow: function (Id)
+            {
+                permiso = {!! json_encode($permiso[0]->btn_edit) !!};
+                if(permiso == 1)
+                {
+                    $('#btn_modificar_item').click();
+                }
+                else
+                {
+                    sin_permiso();
+                }
+            }
+        });
+
+        $(window).on('resize.jqGrid', function () {
+            $("#tabla_items").jqGrid('setGridWidth', $("#contenedor").width());
+        });
+
+        $("#mdl_imarca").select2({
+            dropdownParent: $("#Modal_Item")
+        });
+
+        $("#mdl_iproveedor").select2({
+            dropdownParent: $("#Modal_Item")
+        });
+
+        $("#mdl_ifactura").select2({
+            dropdownParent: $("#Modal_Item")
+        });
+
+    });
+</script>
 @stop
 @endsection

@@ -12,10 +12,12 @@ class DashboardController extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-            $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-            $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-            
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_dashboard'],['btn_view',1]])->get();
+                if ($permiso->count() == 0) 
+                {
+                    return view('errors/vw_sin_permiso',compact('menu'));
+                }
             $datos =& $this->recuperar_datos();
             if($datos['CODERR']=='00000')
             {
@@ -23,14 +25,12 @@ class DashboardController extends BaseSoapController
                 $aperturados = $datos['TOTRES'];
                 $proceso = $datos['TOTPRO'];
                 $finalizado = $datos['TOTNOR'];
-                return view('dashboard/vw_dashboard',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','total','aperturados','proceso','finalizado'));
+                return view('dashboard/vw_dashboard',compact('menu','permiso','total','aperturados','proceso','finalizado'));
             }
-
-            echo "HUBO UN ERROR TRAENDO LOS DATOS"; 
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -68,10 +68,10 @@ class DashboardController extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuariox = $xml->createElement('USER',session('id_usuario')); 
         $usuariox =$root->appendChild($usuariox);  
 
-        $ipx=$xml->createElement('NIVEL',session('rol')); 
+        $ipx=$xml->createElement('NIVEL',session('sro_id')); 
         $ipx =$root->appendChild($ipx); 
 
         $xml->formatOutput = true;

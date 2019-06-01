@@ -14,24 +14,24 @@ class Ticket_Nuevo_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-            $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-            $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-            
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_nuevo_ticket'],['btn_view',1]])->get();
+                if ($permiso->count() == 0) 
+                {
+                    return view('errors/vw_sin_permiso',compact('menu'));
+                }
             $datos =& $this->traer_datos();
             if($datos['CODERR']=='00000')
             {
                 $numtip = $datos['NUMTIP'];
                 $numare = $datos['NUMARE'];
                 $numpri = $datos['NUMPRI'];
-                return view('tickets/vw_ticket_nuevo',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','numtip','numare','numpri','datos'));
+                return view('tickets/vw_ticket_nuevo',compact('menu','permiso','numtip','numare','numpri','datos'));
             }
-
-            echo "HUBO UN ERROR TRAENDO LOS DATOS"; 
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -64,6 +64,16 @@ class Ticket_Nuevo_Controller extends BaseSoapController
             'txfecha' => 'required|string',
             'intitulo' => 'required|string',
             'descripcion' => 'required',
+        ],[
+            'cbxtipo.required' => 'EL CAMPO TIPO ES OBLIGATORIO',
+            'cbxarea.required' => 'EL CAMPO AREA ES OBLIGATORIO',
+            'cbxpri.required' => 'EL CAMPO PRIORIDAD ES OBLIGATORIO',
+            'txfecha.required' => 'EL CAMPO FECHA ES OBLIGATORIO',
+            'intitulo.required' => 'EL CAMPO TITULO ES OBLIGATORIO',
+            'descripcion.required' => 'EL CAMPO DESCRIPCION ES OBLIGATORIO',
+            'cbxtipo.not_in' => 'DEBES SELECCIONAR UN CAMPO VALIDO',
+            'cbxarea.not_in' => 'DEBES SELECCIONAR UNA AREA VALIDA',
+            'cbxpri.not_in' => 'DEBES SELECCIONAR UNA PRIORIDAD VALIDA',
         ]);
         
         if ($validator->passes()) 
@@ -75,7 +85,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
 
             $tix=$xml->createElement('TIP',$request['cbxtipo']); 
@@ -168,7 +178,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         {
             return response()->json([
             'msg' => 'validator',
-            'error'=>$validator->errors()->all()
+            'respuesta'=>$validator->errors()->all()
             ]);
         }
     }
@@ -227,10 +237,10 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuariox = $xml->createElement('USER',session('id_usuario')); 
         $usuariox =$root->appendChild($usuariox);  
 
-        $ipx=$xml->createElement('NIVEL',session('rol')); 
+        $ipx=$xml->createElement('NIVEL',session('sro_id')); 
         $ipx =$root->appendChild($ipx); 
 
         $xml->formatOutput = true;

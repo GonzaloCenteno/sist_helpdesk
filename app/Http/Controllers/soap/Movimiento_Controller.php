@@ -13,34 +13,26 @@ class Movimiento_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            if (session('rol') == 1 || session('rol') == 2) 
-            {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-                
-                $items =& $this->traer_items();
-                $punto_ventas =& $this->traer_puntos_venta();
-                //dd($punto_venta);
-                if($items['CODERR']=='00000' && $punto_ventas['CODERR']=='00000')
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_movimientos'],['btn_view',1]])->get();
+                if ($permiso->count() == 0) 
                 {
-                    $item = $items['ITEM'];
-                    $punto_venta = $punto_ventas['PVT'];
-                    $num_ite = $items['NUMTIC'];
-                    $num_pvt = $punto_ventas['NUMTIC'];
-                    return view('inventario/vw_movimiento',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','item','punto_venta','num_ite','num_pvt'));
+                    return view('errors/vw_sin_permiso',compact('menu'));
                 }
-
-                echo "HUBO UN ERROR TRAENDO LOS DATOS";
-            }
-            else
+            $items =& $this->traer_items();
+            $punto_ventas =& $this->traer_puntos_venta();
+            if($items['CODERR']=='00000' && $punto_ventas['CODERR']=='00000')
             {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
-            }     
+                $item = $items['ITEM'];
+                $punto_venta = $punto_ventas['PVT'];
+                $num_ite = $items['NUMTIC'];
+                $num_pvt = $punto_ventas['NUMTIC'];
+                return view('inventario/vw_movimiento',compact('menu','permiso','item','punto_venta','num_ite','num_pvt'));
+            }
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -72,7 +64,7 @@ class Movimiento_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
         
         $iditemxml = $xml->createElement('IDI', $request['id_item']);
@@ -151,7 +143,7 @@ class Movimiento_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USU',session('nombre_usuario')); 
+        $usuariox = $xml->createElement('USU',session('id_usuario')); 
         $usuariox =$root->appendChild($usuariox);
         
         $xml->formatOutput = true;
@@ -188,7 +180,7 @@ class Movimiento_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USU',session('nombre_usuario')); 
+        $usuariox = $xml->createElement('USU',session('id_usuario')); 
         $usuariox =$root->appendChild($usuariox);
         
         $xml->formatOutput = true;
@@ -235,10 +227,10 @@ class Movimiento_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
@@ -352,7 +344,7 @@ class Movimiento_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
         
         $idmovimientoxml = $xml->createElement('IDM', $id_movimiento);
@@ -452,10 +444,10 @@ class Movimiento_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);  
             
             $wherexml = $xml->createElement('WHERE', $where);

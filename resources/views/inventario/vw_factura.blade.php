@@ -43,8 +43,17 @@
                     </div>
                     <div class="form-group col-md-3" style="padding-top: 29px;">                    
                         <button id="btn_buscar_factura" class="btn btn-danger" type="button"><i class="fa fa-search"></i> BUSCAR</button>
-                        <button id="btn_nueva_factura" data-toggle="modal" data-target="#Modal_Factura" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
-                        <button id="btn_modificar_factura" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @if( $permiso[0]->btn_new == 1 )
+                            <button id="btn_nueva_factura" data-toggle="modal" data-target="#Modal_Factura" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        @else
+                            <button onclick="sin_permiso();" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        @endif
+                        @if( $permiso[0]->btn_edit == 1 )
+                            <button style="display:none;" id="btn_nueva_factura" data-toggle="modal" data-target="#Modal_Factura" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                            <button id="btn_modificar_factura" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @else
+                            <button onclick="sin_permiso();" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @endif
                     </div>
                 </div>
 
@@ -159,5 +168,70 @@
 
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/inventario/factura.js') }}"></script>
+<script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+    jQuery(document).ready(function($){
+    
+        jQuery("#tabla_facturas").jqGrid({
+            url: 'facturas/0?grid=facturas',
+            datatype: 'json', mtype: 'GET',
+            height: '450px', autowidth: true,
+            toolbarfilter: true,
+            sortable:false,
+            pgbuttons: false,
+            pgtext: null, 
+            //cmTemplate: { sortable: false },
+            colNames: ['ID', 'SERIE', 'NUMERO', 'MONTO', 'FECHA REGISTRO', 'ID_PRODUCTO','PRODUCTO', 'ID_MON', 'MONEDA','ARCHIVAR'],
+            rowNum: 10, sortname: 'fact_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_factura" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE FACTURAS - ', align: "center",
+            colModel: [
+                {name: 'fact_id', index: 'fact_id', align: 'left',width: 10, hidden:true},
+                {name: 'fact_serie', index: 'fact_serie', align: 'center', width: 20},
+                {name: 'fact_num', index: 'fact_num', align: 'center', width: 20},
+                {name: 'fact_monto', index: 'fact_monto', align: 'center', width: 20},
+                {name: 'fact_fec', index: 'fact_fec', align: 'center', width: 20},
+                {name: 'id_producto', index: 'id_producto', align: 'left', width: 10, hidden:true},
+                {name: 'pro_id', index: 'pro_id', align: 'left', width: 40},
+                {name: 'id_moneda', index: 'id_moneda', align: 'left', width: 10, hidden:true},
+                {name: 'id_mon', index: 'id_mon', align: 'center', width: 10},
+                {name: 'fact_img', index: 'fact_img', align: 'center', width: 15}
+            ],
+            pager: '#paginador_tabla_facturas',
+            rowList: [10, 20, 30, 40, 50, 100000000],
+            loadComplete: function() {
+                $("option[value=100000000]").text('TODOS');
+            },
+            gridComplete: function () {
+                    var idarray = jQuery('#tabla_facturas').jqGrid('getDataIDs');
+                    if (idarray.length > 0) {
+                    var firstid = jQuery('#tabla_facturas').jqGrid('getDataIDs')[0];
+                            $("#tabla_facturas").setSelection(firstid);    
+                        }
+                },
+            onSelectRow: function (Id){},
+            ondblClickRow: function (Id)
+            {
+                permiso = {!! json_encode($permiso[0]->btn_edit) !!};
+                if(permiso == 1)
+                {
+                    $('#btn_modificar_factura').click();
+                }
+                else
+                {
+                    sin_permiso();
+                }
+            }
+        });
+
+        $(window).on('resize.jqGrid', function () {
+            $("#tabla_facturas").jqGrid('setGridWidth', $("#contenedor").width());
+        });
+
+        $("#mdl_producto").select2({
+            dropdownParent: $("#Modal_Factura")
+        });
+
+    });
+</script>
 @stop
 @endsection

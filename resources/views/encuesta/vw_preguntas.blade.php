@@ -15,12 +15,25 @@
             <div class="mT-30" style="padding-bottom: 499px;">
 
                 <div class="form-row">
-                    <div class="form-group col-md-3">
-                        <button id="btn_nueva_pregunta" data-toggle="modal" data-target="#Modal_Pregunta" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
-                    </div>
-                    <div class="form-group col-md-3">
-                        <button class="btn btn-block" id="btn_modificar_pregunta" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
-                    </div>
+                    @if( $permiso[0]->btn_new == 1 )
+                        <div class="form-group col-md-3">
+                            <button id="btn_nueva_pregunta" data-toggle="modal" data-target="#Modal_Pregunta" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        </div>
+                    @else
+                        <div class="form-group col-md-3">
+                            <button onclick="sin_permiso();" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        </div> 
+                    @endif
+                    @if( $permiso[0]->btn_edit == 1 )
+                        <button style="display:none;" id="btn_nueva_pregunta" data-toggle="modal" data-target="#Modal_Pregunta" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        <div class="form-group col-md-3">
+                            <button class="btn btn-block" id="btn_modificar_pregunta" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        </div>
+                    @else
+                        <div class="form-group col-md-3">
+                            <button class="btn btn-block" onclick="sin_permiso();" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="form-row">
@@ -67,5 +80,59 @@
 
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/encuesta/preguntas.js') }}"></script>
+<script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+    jQuery(document).ready(function($){
+    
+        jQuery("#tabla_preguntas").jqGrid({
+            url: 'preguntas/0?grid=preguntas',
+            datatype: 'json', mtype: 'GET',
+            height: '450px', autowidth: true,
+            toolbarfilter: true,
+            sortable:false,
+            pgbuttons: false,
+            pgtext: null,
+            //cmTemplate: { sortable: false },
+            colNames: ['ID', 'DESCRIPCION','ESTADO'],
+            rowNum: 10, sortname: 'pre_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_preguntas" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE PREGUNTAS -', align: "center",
+            colModel: [
+                {name: 'pre_id', index: 'pre_id', align: 'left',width: 10, hidden:true},
+                {name: 'pre_desc', index: 'pre_desc', align: 'left', width: 80},
+                {name: 'pre_est', index: 'pre_est', align: 'center', width: 20}
+            ],
+            pager: '#paginador_tabla_preguntas',
+            rowList: [10, 20, 30, 40, 50, 100000000],
+            loadComplete: function() {
+                $("option[value=100000000]").text('TODOS');
+            },
+            gridComplete: function () {
+                    var idarray = jQuery('#tabla_preguntas').jqGrid('getDataIDs');
+                    if (idarray.length > 0) {
+                    var firstid = jQuery('#tabla_preguntas').jqGrid('getDataIDs')[0];
+                            $("#tabla_preguntas").setSelection(firstid);    
+                        }
+                },
+            onSelectRow: function (Id){},
+            ondblClickRow: function (Id)
+            {
+                permiso = {!! json_encode($permiso[0]->btn_edit) !!};
+                if(permiso == 1)
+                {
+                    $('#btn_modificar_pregunta').click();
+                }
+                else
+                {
+                    sin_permiso();
+                }
+            }
+        });
+
+        $(window).on('resize.jqGrid', function () {
+            $("#tabla_preguntas").jqGrid('setGridWidth', $("#contenedor").width());
+        });
+
+    });
+</script>
 @stop
 @endsection

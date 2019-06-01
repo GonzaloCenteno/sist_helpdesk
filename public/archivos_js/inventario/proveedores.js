@@ -1,53 +1,3 @@
-jQuery(document).ready(function($){
-    
-    jQuery("#tabla_proveedores").jqGrid({
-        url: 'proveedor/0?grid=proveedores',
-        datatype: 'json', mtype: 'GET',
-        height: '450px', autowidth: true,
-        toolbarfilter: true,
-        sortable:false,
-        pgbuttons: false,
-        pgtext: null,
-        colNames: ['ID', 'RAZON SOCIAL', 'RUC', 'TELEFONO', 'CONTACTO', 'DIRECCION', 'SERVICIO', 'CORREO', 'ESTADO'],
-        rowNum: 10, sortname: 'pro_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_proveedor" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> | <div class="btn-group"><button type="button" class="btn btn-primary"><i class="fa fa-print"></i> LISTA PROVEEDORES</button><button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><div class="dropdown-menu" role="menu"><button id="btn_imp_list_prov_pdf" type="button" class="btn btn-danger btn-block btn-lg"><i class="fa fa-file-pdf-o"></i> IMPRIMIR PDF</button><div class="dropdown-divider"></div><button id="btn_imp_lis_prov_excel" type="button" class="btn btn-success btn-block btn-lg"><i class="fa fa-file-excel-o"></i> IMPRIMIR EXCEL</button></div></div> - LISTA DE PROVEEDORES -', align: "center",
-        colModel: [
-            {name: 'pro_id', index: 'pro_id', align: 'left',width: 10, hidden:true},
-            {name: 'pro_raz', index: 'pro_raz', align: 'left', width: 30},
-            {name: 'pro_ruc', index: 'pro_ruc', align: 'center', width: 8},
-            {name: 'pro_tel', index: 'pro_tel', align: 'center', width: 8},
-            {name: 'pro_con', index: 'pro_con', align: 'left', width: 10},
-            {name: 'pro_dir', index: 'pro_dir', align: 'left', width: 20},
-            {name: 'pro_serv', index: 'pro_serv', align: 'left', width: 10},
-            {name: 'pro_correo', index: 'pro_correo', align: 'left', width: 12},
-            {name: 'pro_est', index: 'pro_est', align: 'center', width: 10}
-        ],
-        pager: '#paginador_tabla_proveedores',
-        rowList: [10, 20, 30, 40, 50, 100000000],
-        loadComplete: function() {
-            $("option[value=100000000]").text('TODOS');
-        },
-        gridComplete: function () {
-                var idarray = jQuery('#tabla_proveedores').jqGrid('getDataIDs');
-                if (idarray.length > 0) {
-                var firstid = jQuery('#tabla_proveedores').jqGrid('getDataIDs')[0];
-                        $("#tabla_proveedores").setSelection(firstid);    
-                    }
-            },
-        onSelectRow: function (Id){},
-        ondblClickRow: function (Id){$('#btn_modificar_proveedor').click();}
-    });
-    
-    $(window).on('resize.jqGrid', function () {
-        $("#tabla_proveedores").jqGrid('setGridWidth', $("#contenedor").width());
-    });
-    
-    $("#txt_razon_social").keypress(function (e) {
-        if (e.which == 13) {
-            $('#btn_buscar_proveedor').click();
-        }
-    });
-    
-});
 
 function limpiar_datos_proveedor()
 {
@@ -287,12 +237,4 @@ jQuery(document).on("click", "#btn_act_table_proveedor", function(){
     }).trigger('reloadGrid');
     
     $("#txt_razon_social").val('');
-});
-
-jQuery(document).on("click","#btn_imp_list_prov_pdf", function(){
-    window.open('proveedor/0?show=lista_proveedores'); 
-});
-
-jQuery(document).on("click", "#btn_imp_lis_prov_excel", function(){
-    window.open('proveedor/0?show=lista_proveedores_excel'); 
 });

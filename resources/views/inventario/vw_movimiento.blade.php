@@ -43,8 +43,17 @@
                     </div>
                     <div class="form-group col-md-3" style="padding-top: 29px;">                    
                         <button id="btn_buscar_movimiento" class="btn btn-danger" type="button"><i class="fa fa-search"></i> BUSCAR</button>
-                        <button id="btn_nuevo_movimiento" data-toggle="modal" data-target="#Modal_Movimiento" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
-                        <button id="btn_modificar_movimiento" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @if( $permiso[0]->btn_new == 1 )
+                            <button id="btn_nuevo_movimiento" data-toggle="modal" data-target="#Modal_Movimiento" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        @else
+                            <button onclick="sin_permiso();" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        @endif
+                        @if( $permiso[0]->btn_edit == 1 )
+                            <button style="display:none;" id="btn_nuevo_movimiento" data-toggle="modal" data-target="#Modal_Movimiento" data-backdrop="static" data-keyboard="false" class="btn btn-success" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                            <button id="btn_modificar_movimiento" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @else
+                            <button onclick="sin_permiso();" class="btn" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        @endif
                     </div>
                 </div>
 
@@ -120,5 +129,79 @@
 
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/inventario/movimiento.js') }}"></script>
+<script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+    jQuery(document).ready(function($){
+    
+        jQuery("#tabla_movimientos").jqGrid({
+            url: 'movimientos/0?grid=movimientos',
+            datatype: 'json', mtype: 'GET',
+            height: '450px', autowidth: true,
+            toolbarfilter: true,
+            sortable:false,
+            pgbuttons: false,
+            pgtext: null,
+            //cmTemplate: { sortable: false },
+            colNames: ['ID', 'IDITEM', 'ITEM', 'IDPVT_O', 'PUNTO VENTA ORIGEN', 'IDPVT_D','PUNTO VENTA DESTINO', 'USUARIO', 'ID_USUARIO', 'FECHA', 'ESTADO'],
+            rowNum: 10, sortname: 'mov_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_movimiento" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE MOVIMIENTOS -', align: "center",
+            colModel: [
+                {name: 'mov_id', index: 'mov_id', align: 'left',width: 10, hidden:true},
+                {name: 'id_item', index: 'id_item', align: 'center', width: 15, hidden:true},
+                {name: 'item_id', index: 'item_id', align: 'center', width: 15},
+                {name: 'id_pvt_ori', index: 'id_pvt_ori', align: 'center', width: 10, hidden:true},
+                {name: 'pvt_ori', index: 'pvt_ori', align: 'left', width: 17},
+                {name: 'id_pvt_des', index: 'id_pvt_des', align: 'left', width: 20, hidden:true},
+                {name: 'pvt_des', index: 'pvt_des', align: 'left', width: 17},
+                {name: 'usu_id', index: 'usu_id', align: 'left', width: 20},
+                {name: 'id_usuario', index: 'id_usuario', align: 'left', width: 15,hidden:true},
+                {name: 'mov_fec', index: 'mov_fec', align: 'center', width: 10},
+                {name: 'mov_est', index: 'mov_est', align: 'center', width: 10}
+            ],
+            pager: '#paginador_tabla_movimientos',
+            rowList: [10, 20, 30, 40, 50, 100000000],
+            loadComplete: function() {
+                $("option[value=100000000]").text('TODOS');
+            },
+            gridComplete: function () {
+                    var idarray = jQuery('#tabla_movimientos').jqGrid('getDataIDs');
+                    if (idarray.length > 0) {
+                    var firstid = jQuery('#tabla_movimientos').jqGrid('getDataIDs')[0];
+                            $("#tabla_movimientos").setSelection(firstid);    
+                        }
+                },
+            onSelectRow: function (Id){},
+            ondblClickRow: function (Id)
+            {
+                permiso = {!! json_encode($permiso[0]->btn_edit) !!};
+                if(permiso == 1)
+                {
+                    $('#btn_modificar_movimiento').click();
+                }
+                else
+                {
+                    sin_permiso();
+                }
+            }
+        });
+
+        $(window).on('resize.jqGrid', function () {
+            $("#tabla_movimientos").jqGrid('setGridWidth', $("#contenedor").width());
+        });
+
+        $("#mdl_mitem").select2({
+            dropdownParent: $("#Modal_Movimiento")
+        });
+
+        $("#mdl_pvt_origen").select2({
+            dropdownParent: $("#Modal_Movimiento")
+        });
+
+        $("#mdl_pvt_destino").select2({
+            dropdownParent: $("#Modal_Movimiento")
+        });
+
+    });
+</script>
 @stop
 @endsection

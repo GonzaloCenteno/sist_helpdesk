@@ -6,9 +6,6 @@
     max-height: calc(100vh - 210px);
     overflow-y: auto;
 }       
-hr {
-    border: 1px solid #7A7878;
-}
 </style>
 <div class="row gap-20 masonry pos-r">
     <div class="masonry-sizer col-md-6"></div>
@@ -92,5 +89,9 @@ hr {
 
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/tickets/ticket_asignar.js') }}"></script>
+<script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+</script>
 @stop
 @endsection

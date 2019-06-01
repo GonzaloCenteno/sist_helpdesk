@@ -128,6 +128,13 @@
                   height: 40px;
                   z-index: 400;
               }
+
+              .selector_submenu{
+                  background-color: rgba(224, 238, 251, 1);
+              }
+              .borde_hr {
+                    border: 1px solid #7A7878;
+                }
         </style>
 
         <link href="{{ asset('css/style.css') }}" rel="stylesheet">
@@ -178,80 +185,40 @@
                     </div>
 
                     <!-- ### $Sidebar Menu ### -->
+                    <div class="text-center" style="padding-top:15px;">
+                        <h5><b>USUARIO: {{ session('id_usuario') }}</b></h5>
+                    </div>
+                    
+                    <hr class="borde_hr">
                     <ul class="sidebar-menu scrollable pos-r">
-                        @if(isset($tblmenu_men))  
-                            @foreach($tblmenu_men as $menu)
-                                <li class="nav-item mT-30 active">
-                                    <a class="sidebar-link" href="{{ $menu->menu_rut }}">
-                                        <span class="icon-holder">
-                                            <i class="c-blue-500 ti-menu"></i>
-                                        </span>
-                                        <span class="title">{{ $menu->menu_desc }}</span>
-                                    </a>
-                                </li>
+                        @if(isset($menu))
+                            @foreach($menu as $men)
+                            <li class="nav-item dropdown" id="{{ $men->men_sistema }}">
+                                <a class="dropdown-toggle" href="javascript:void(0);">
+                                    <span class="icon-holder">
+                                        <i class="c-blue-500 ti-layout-list-thumb"></i>
+                                    </span>
+                                    <span class="title" ><b>{{ $men->men_titulo }}</b></span>
+                                    <span class="arrow">
+                                        <i class="ti-angle-right"></i>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <?php $submenu = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['men_id',$men->men_id],['btn_view',1]])->orderBy('usm_orden','asc')->get();?>
+                                    @foreach($submenu as $sub)
+                                    <li class="{{ $men->men_sistema }}">
+                                        <a class='sidebar-link {{ $sub->sme_ruta }}' href="{{ $sub->sme_ruta }}">
+                                            <span class="icon-holder">
+                                                <i class="c-blue-500 ti-menu"></i>
+                                            </span>
+                                            <span class="title">{{ $sub->sme_titulo }}</span>
+                                        </a>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                            </li>
+                            <hr class="borde_hr">
                             @endforeach
-                        @else
-                        @endif
-                        
-                        @if(session('rol') == 1 || session('rol') == 2)  
-                        <hr>
-                            @if(isset($tblmenu_men2))  
-                                <li class="nav-item dropdown">
-                                <a class="dropdown-toggle" href="javascript:void(0);">
-                                    <span class="icon-holder">
-                                        <i class="c-blue-500 ti-layout-list-thumb"></i>
-                                    </span>
-                                    <span class="title">Inventario</span>
-                                    <span class="arrow">
-                                        <i class="ti-angle-right"></i>
-                                    </span>
-                                </a>
-                                    <ul class="dropdown-menu">
-                                @foreach($tblmenu_men2 as $menu2)
-                                    <li>
-                                        <a class='sidebar-link' href="{{ $menu2->menu_rut }}">
-                                            <span class="icon-holder">
-                                                <i class="c-blue-500 ti-menu"></i>
-                                            </span>
-                                            <span class="title">{{ $menu2->menu_desc }}</span>
-                                        </a>
-                                    </li>
-                                @endforeach
-                            @else
-                            @endif
-                                    </ul>
-                                </li>    
-                        @else
-                        @endif
-                        
-                        @if(session('rol') == 1 || session('rol') == 2)  
-                        <hr>
-                            @if(isset($tblmenu_men3))  
-                                <li class="nav-item dropdown">
-                                <a class="dropdown-toggle" href="javascript:void(0);">
-                                    <span class="icon-holder">
-                                        <i class="c-blue-500 ti-layout-list-thumb"></i>
-                                    </span>
-                                    <span class="title">Encuesta</span>
-                                    <span class="arrow">
-                                        <i class="ti-angle-right"></i>
-                                    </span>
-                                </a>
-                                    <ul class="dropdown-menu">
-                                @foreach($tblmenu_men3 as $menu3)
-                                    <li>
-                                        <a class='sidebar-link' href="{{ $menu3->menu_rut }}">
-                                            <span class="icon-holder">
-                                                <i class="c-blue-500 ti-menu"></i>
-                                            </span>
-                                            <span class="title">{{ $menu3->menu_desc }}</span>
-                                        </a>
-                                    </li>
-                                @endforeach
-                            @else
-                            @endif
-                                    </ul>
-                                </li>    
                         @else
                         @endif
                     </ul>
@@ -276,32 +243,22 @@
                         <ul class="nav-right">
                             <li class="dropdown">
                                 <a href="" class="dropdown-toggle no-after peers fxw-nw ai-c lh-1" data-toggle="dropdown">
-                                    <div class="peer mR-10">
-                                        <img class="w-2r bdrs-50p" src="https://randomuser.me/api/portraits/men/10.jpg" alt="">
-                                    </div>
                                     <div class="peer">
-                                        <span class="fsz-sm c-grey-900">{{ session('nomb_usuario') }}</span>
+                                        <span class="fsz-sm c-grey-900">
+                                            <b>BIENVENIDO: {{ session('nomb_usuario') }} | 
+                                            <?php $sql = DB::table('permisos.vw_rol_menu_usuario')->select('sro_id')->where([['sist_id',session('sist_id')],['ume_usuario',session('id_usuario')]])->first(); 
+                                            if($sql)
+                                            {
+                                                $cargo = DB::table('permisos.tblsistemasrol_sro')->select('sro_descripcion')->where('sro_id',$sql->sro_id)->first(); 
+                                                session(['sro_id'=>$sql->sro_id]);
+                                                echo 'ROL : '.$cargo->sro_descripcion; 
+                                            }
+                                            ?>
+                                            </b>
+                                        </span>
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu fsz-xs">
-<!--                                    <li>
-                                        <a href="" class="d-b td-n pY-5 bgcH-grey-100 c-grey-700">
-                                            <i class="ti-settings mR-10"></i>
-                                            <span>Setting</span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="" class="d-b td-n pY-5 bgcH-grey-100 c-grey-700">
-                                            <i class="ti-user mR-10"></i>
-                                            <span>Profile</span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="email.html" class="d-b td-n pY-5 bgcH-grey-100 c-grey-700">
-                                            <i class="ti-email mR-10"></i>
-                                            <span>Messages</span>
-                                        </a>
-                                    </li>-->
                                     <li role="separator" class="divider"></li>
                                     <li>
                                         <form method="GET" action="{{ route('logout') }}">
@@ -371,8 +328,8 @@
         </script>
 
         <script>
-            var tecnico = {!! DB::table('cromohelp.tbl_tecnico')->pluck('tec_user'); !!}
-            var variable = {!! session('rol') !!};
+            var tecnico = {!! DB::table('cromohelp.tbl_tecnico')->pluck('tec_user') !!};
+            var variable = {!! session('sro_id') !!};
             //alert(variable);
             var pusher = new Pusher('d8966da1d9f626630fe1', {
                 cluster: 'us2',

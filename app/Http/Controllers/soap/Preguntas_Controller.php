@@ -14,21 +14,17 @@ class Preguntas_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            if (session('rol') == 1 || session('rol') == 2) 
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_preguntas'],['btn_view',1]])->get();
+            if ($permiso->count() == 0) 
             {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-                return view('encuesta/vw_preguntas',compact('tblmenu_men','tblmenu_men2','tblmenu_men3'));
+                return view('errors/vw_sin_permiso',compact('menu'));
             }
-            else
-            {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
-            }     
+            return view('encuesta/vw_preguntas',compact('menu','permiso'));
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -56,7 +52,7 @@ class Preguntas_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $desxml = $xml->createElement('DES', strtoupper($request['descripcion']));
@@ -133,10 +129,10 @@ class Preguntas_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
@@ -176,6 +172,7 @@ class Preguntas_Controller extends BaseSoapController
             //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_preguntas'],['btn_view',1]])->get();
             
         $total_pages = 0;
         if (!$sidx) {
@@ -196,10 +193,21 @@ class Preguntas_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['PREGUNTA']->IDPRE;
-            if ($datos['PREGUNTA']->IDEST == 5) {
-                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$datos['PREGUNTA']->IDPRE).',6)"><i class="fa fa-check"></i> '.$datos['PREGUNTA']->ESTPRE.'</button>';
-            }else{
-                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$datos['PREGUNTA']->IDPRE).',5)"><i class="fa fa-times"></i> '.$datos['PREGUNTA']->ESTPRE.'</button>'; 
+            if ($permiso[0]->btn_del == 1) 
+            {
+                if ($datos['PREGUNTA']->IDEST == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$datos['PREGUNTA']->IDPRE).',6)"><i class="fa fa-check"></i> '.$datos['PREGUNTA']->ESTPRE.'</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$datos['PREGUNTA']->IDPRE).',5)"><i class="fa fa-times"></i> '.$datos['PREGUNTA']->ESTPRE.'</button>'; 
+                }
+            }
+            else
+            {
+                if ($datos['PREGUNTA']->IDEST == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> '.$datos['PREGUNTA']->ESTPRE.'</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> '.$datos['PREGUNTA']->ESTPRE.'</button>'; 
+                }
             }
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['PREGUNTA']->IDPRE),
@@ -220,10 +228,21 @@ class Preguntas_Controller extends BaseSoapController
         {
            foreach ($datos['PREGUNTA'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDPRE;
-                if ($Datos->IDEST == 5) {
-                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$Datos->IDPRE).',6)"><i class="fa fa-check"></i> '.$Datos->ESTPRE.'</button>';
-                }else{
-                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$Datos->IDPRE).',5)"><i class="fa fa-times"></i> '.$Datos->ESTPRE.'</button>'; 
+                if ($permiso[0]->btn_del == 1) 
+                {
+                    if ($Datos->IDEST == 5) {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$Datos->IDPRE).',6)"><i class="fa fa-check"></i> '.$Datos->ESTPRE.'</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_pregunta('.trim((integer)$Datos->IDPRE).',5)"><i class="fa fa-times"></i> '.$Datos->ESTPRE.'</button>'; 
+                    }
+                }
+                else
+                {
+                    if ($Datos->IDEST == 5) {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> '.$Datos->ESTPRE.'</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> '.$Datos->ESTPRE.'</button>'; 
+                    }
                 }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDPRE),
@@ -244,7 +263,7 @@ class Preguntas_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $idpreguntaxml = $xml->createElement('IDP', $id_pregunta);

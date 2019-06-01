@@ -128,7 +128,7 @@ hr {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_cerrar_sesion">CERRAR VENTANA</button>
-                @if(session('rol') == 1 || session('rol') == 2)
+                @if(session('sro_id') == 1 || session('sro_id') == 2)
                     <button type="button" class="btn btn-danger" id="btn_rechazar_tickets">RECHAZAR TICKET</button>
                 @else
                 @endif
@@ -176,6 +176,9 @@ hr {
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/tickets/ticket_buscar.js') }}"></script>
 <script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+    
 jQuery(document).on("click", "#btn_cerrar_ticket", function(){
     
     id_ticket = $('#tabla_tickets').jqGrid ('getGridParam', 'selrow');

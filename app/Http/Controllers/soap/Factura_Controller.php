@@ -13,18 +13,23 @@ class Factura_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            if (session('rol') == 1 || session('rol') == 2) 
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_facturas'],['btn_view',1]])->get();
+                if ($permiso->count() == 0) 
+                {
+                    return view('errors/vw_sin_permiso',compact('menu'));
+                }
+            $datos =& $this->traer_datos();
+            if($datos['CODERR']=='00000')
             {
-                return $this->traer_datos(session('menu_sist'),session('menu_rol'));
+                $proveedor = $datos['PROVEEDOR'];
+                $num = $datos['NUMTIC'];
+                return view('inventario/vw_factura',compact('menu','permiso','proveedor','num'));
             }
-            else
-            {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
-            }     
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -56,7 +61,7 @@ class Factura_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $seriexml = $xml->createElement('SER', strtoupper($request['serie']));
@@ -116,7 +121,7 @@ class Factura_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $idfacturaxml = $xml->createElement('ID', $id_factura);
@@ -184,7 +189,7 @@ class Factura_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+        $usuariox = $xml->createElement('USU',session('id_usuario'));
         $usuariox = $root->appendChild($usuariox);  
 
         $idfactxml = $xml->createElement('IDFACT',$request['id_factura']); 
@@ -233,11 +238,8 @@ class Factura_Controller extends BaseSoapController
         ]);
     }
     
-    public function traer_datos($sist_id,$rol_id)
+    public function &traer_datos()
     {
-        $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-        $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-        $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',$sist_id],['menu_rol',$rol_id],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
         self::setWsdl();
         $this->service = InstanceSoapClient::init();
 
@@ -245,7 +247,7 @@ class Factura_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USU',session('nombre_usuario')); 
+        $usuariox = $xml->createElement('USU',session('id_usuario')); 
         $usuariox =$root->appendChild($usuariox);
         
         $xml->formatOutput = true;
@@ -270,17 +272,7 @@ class Factura_Controller extends BaseSoapController
         $xmlr2=$xmlr2;
         $datos = (array) @simplexml_load_string($xmlr2);
         
-        //dd($datos['PROVEEDOR']);
-
-        if($datos['CODERR']=='00000')
-        {
-            $proveedor = $datos['PROVEEDOR'];
-            $num = $datos['NUMTIC'];
-            //dd($proveedor->IDPRO);
-            return view('inventario/vw_factura',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','proveedor','num'));
-        }
-        
-        echo "HUBO UN ERROR TRAENDO LOS DATOS DEL PROVEEDOR";
+        return $datos;
     }
     
     public function crear_tabla_facturas(Request $request)
@@ -302,10 +294,10 @@ class Factura_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
@@ -345,6 +337,7 @@ class Factura_Controller extends BaseSoapController
             //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_facturas'],['btn_view',1]])->get();
             
         $total_pages = 0;
         if (!$sidx) {
@@ -365,10 +358,21 @@ class Factura_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['FACTURA']->IDFAC;
-            if ($datos['FACTURA']->FACIMG == '-') {
-                $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-folder-open"></i> Subir</button>';
-            }else{
-                $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+            if ($permiso[0]->btn_edit == 1) 
+            {
+                if ($datos['FACTURA']->FACIMG == '-') {
+                    $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-folder-open"></i> Subir</button>';
+                }else{
+                    $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                }
+            }
+            else
+            {
+                if ($datos['FACTURA']->FACIMG == '-') {
+                    $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" onclick="sin_permiso();"><i class="fa fa-folder-open"></i> Subir</button>';
+                }else{
+                    $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                }
             }
             if ($datos['FACTURA']->FACMON == 0) {
                 $moneda = '<label>S/</label>';
@@ -401,10 +405,21 @@ class Factura_Controller extends BaseSoapController
         {
            foreach ($datos['FACTURA'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDFAC;
-                if ($Datos->FACIMG == '-') {
-                    $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Subir</button>';
-                }else{
-                    $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                if ($permiso[0]->btn_edit == 1) 
+                {
+                    if ($Datos->FACIMG == '-') {
+                        $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-folder-open"></i> Subir</button>';
+                    }else{
+                        $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                    }
+                }
+                else
+                {
+                    if ($Datos->FACIMG == '-') {
+                        $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" onclick="sin_permiso();"><i class="fa fa-folder-open"></i> Subir</button>';
+                    }else{
+                        $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                    }
                 }
                 if ($Datos->FACMON == 0) {
                     $moneda = '<label>S/</label>';
@@ -478,10 +493,10 @@ class Factura_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);  
             
             $wherexml = $xml->createElement('WHERE', $where);
@@ -524,6 +539,7 @@ class Factura_Controller extends BaseSoapController
             //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_facturas'],['btn_view',1]])->get();
             
         $total_pages = 0;
         if (!$sidx) {
@@ -544,10 +560,21 @@ class Factura_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['FACTURA']->IDFAC;
-            if ($datos['FACTURA']->FACIMG == '-') {
-                $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-folder-open"></i> Subir</button>';
-            }else{
-                $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+            if ($permiso[0]->btn_edit == 1) 
+            {
+                if ($datos['FACTURA']->FACIMG == '-') {
+                    $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-folder-open"></i> Subir</button>';
+                }else{
+                    $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                }
+            }
+            else
+            {
+                if ($datos['FACTURA']->FACIMG == '-') {
+                    $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" onclick="sin_permiso();"><i class="fa fa-folder-open"></i> Subir</button>';
+                }else{
+                    $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                }
             }
             if ($datos['FACTURA']->FACMON == 0) {
                 $moneda = '<label>S/</label>';
@@ -580,10 +607,21 @@ class Factura_Controller extends BaseSoapController
         {
            foreach ($datos['FACTURA'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDFAC;
-                if ($Datos->FACIMG == '-') {
-                    $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Subir</button>';
-                }else{
-                    $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                if ($permiso[0]->btn_edit == 1) 
+                {
+                    if ($Datos->FACIMG == '-') {
+                        $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_subir_archivo" data-toggle="modal" data-target="#Modal_Archivo" data-backdrop="static" data-keyboard="false"><i class="fa fa-folder-open"></i> Subir</button>';
+                    }else{
+                        $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                    }
+                }
+                else
+                {
+                    if ($Datos->FACIMG == '-') {
+                        $archivo = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" onclick="sin_permiso();"><i class="fa fa-folder-open"></i> Subir</button>';
+                    }else{
+                        $archivo = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Archivado</button>'; 
+                    }
                 }
                 if ($Datos->FACMON == 0) {
                     $moneda = '<label>S/</label>';

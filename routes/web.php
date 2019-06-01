@@ -37,6 +37,8 @@ Route::group(['namespace' => 'soap'], function()
     
     Route::resource('valores', 'Valores_Controller');
     Route::resource('preguntas', 'Preguntas_Controller');
+    
+    Route::resource('rep_gerenciales', 'Reportes_Controller');
 });
 
 

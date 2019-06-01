@@ -12,22 +12,18 @@ class Ticket_Asignados_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            if (session('rol') == 1 || session('rol') == 2) 
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_tickets_asignados'],['btn_view',1]])->get();
+            $prioridad = DB::table('cromohelp.tbl_prioridad')->orderBy('prio_id','asc')->get();
+            if ($permiso->count() == 0) 
             {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-                $prioridad = DB::table('cromohelp.tbl_prioridad')->orderBy('prio_id','asc')->get();
-                return view('tickets/vw_ticket_asignados',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','prioridad'));
+                return view('errors/vw_sin_permiso',compact('menu'));
             }
-            else
-            {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
-            }     
+            return view('tickets/vw_ticket_asignados',compact('menu','permiso','prioridad')); 
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -107,7 +103,7 @@ class Ticket_Asignados_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
@@ -179,7 +175,7 @@ class Ticket_Asignados_Controller extends BaseSoapController
             );  
             return response()->json($Lista);
         }
-        else if ($datos['NUMTIC'] == 0) 
+        if ($datos['NUMTIC'] == 0) 
         {
             return response()->json([
                 'page' => 0,
@@ -254,7 +250,7 @@ class Ticket_Asignados_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
             $wherexml = $xml->createElement('WHERE', $where);
@@ -363,10 +359,10 @@ class Ticket_Asignados_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
-        $rolxml=$xml->createElement('NIVEL',session('rol')); 
+        $rolxml=$xml->createElement('NIVEL',session('sro_id')); 
         $rolxml =$root->appendChild($rolxml); 
 
         $idticketxml = $xml->createElement('ID',$id_ticket);
@@ -427,7 +423,7 @@ class Ticket_Asignados_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuarioxml = $xml->createElement('USER',session('id_usuario')); 
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $id_ticketxml =$xml->createElement('ID',$id_ticket); 
@@ -437,7 +433,7 @@ class Ticket_Asignados_Controller extends BaseSoapController
         $respuesxml=$xml->createElement('RPTA',$var); 
         $respuesxml =$root->appendChild($respuesxml);
         
-        if (session('rol') == 1 || session('rol') == 2) 
+        if (session('sro_id') == 1 || session('sro_id') == 2) 
         {
             $estadoxml=$xml->createElement('EST',3); 
             $estadoxml =$root->appendChild($estadoxml);
@@ -485,7 +481,7 @@ class Ticket_Asignados_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuarioxml = $xml->createElement('USER',session('id_usuario')); 
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $id_ticketxml =$xml->createElement('ID',$id_ticket); 
@@ -534,7 +530,7 @@ class Ticket_Asignados_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuarioxml = $xml->createElement('USER',session('id_usuario')); 
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $id_ticketxml =$xml->createElement('IDTICKET',$id_ticket); 
@@ -594,7 +590,7 @@ class Ticket_Asignados_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuarioxml = $xml->createElement('USER',session('id_usuario')); 
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $id_ticketxml =$xml->createElement('IDTICKET',$id_ticket); 

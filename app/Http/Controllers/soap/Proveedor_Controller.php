@@ -6,9 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Tbl_proveedor;
 use Validator;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ProveedorExport;
-
 
 class Proveedor_Controller extends BaseSoapController
 {
@@ -17,21 +14,17 @@ class Proveedor_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            if (session('rol') == 1 || session('rol') == 2) 
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_proveedores'],['btn_view',1]])->get();
+            if ($permiso->count() == 0) 
             {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-                return view('inventario/vw_proveedores',compact('tblmenu_men','tblmenu_men2','tblmenu_men3'));
+                return view('errors/vw_sin_permiso',compact('menu'));
             }
-            else
-            {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
-            }     
+            return view('inventario/vw_proveedores',compact('menu','permiso')); 
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -55,14 +48,6 @@ class Proveedor_Controller extends BaseSoapController
             {
                 return $this->validar_buscar_proveedores($request);
             }
-            if ($request['show'] == 'lista_proveedores') 
-            {
-                return $this->abrir_reporte_lista_proveedores($request);
-            }
-            if ($request['show'] == 'lista_proveedores_excel') 
-            {
-                return $this->abrir_reporte_lista_proveedores_excel($request);
-            }
         }
     }
 
@@ -75,7 +60,7 @@ class Proveedor_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $rsocialxml = $xml->createElement('RAZ', strtoupper($request['razon_social']));
@@ -170,10 +155,10 @@ class Proveedor_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
@@ -213,7 +198,7 @@ class Proveedor_Controller extends BaseSoapController
             //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
-            
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_proveedores'],['btn_view',1]])->get();
         $total_pages = 0;
         if (!$sidx) {
             $sidx = 1;
@@ -233,10 +218,21 @@ class Proveedor_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['PROVEEDOR']->IDPRO;
-            if ($datos['PROVEEDOR']->IDEST == 5) {
-                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$datos['PROVEEDOR']->IDPRO).',6)"><i class="fa fa-check"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>';
-            }else{
-                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$datos['PROVEEDOR']->IDPRO).',5)"><i class="fa fa-times"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>'; 
+            if ($permiso[0]->btn_del == 1) 
+            {
+                if ($datos['PROVEEDOR']->IDEST == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$datos['PROVEEDOR']->IDPRO).',6)"><i class="fa fa-check"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$datos['PROVEEDOR']->IDPRO).',5)"><i class="fa fa-times"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>'; 
+                }
+            }
+            else
+            {
+                if ($datos['PROVEEDOR']->IDEST == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>'; 
+                }
             }
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['PROVEEDOR']->IDPRO),
@@ -263,10 +259,21 @@ class Proveedor_Controller extends BaseSoapController
         {
            foreach ($datos['PROVEEDOR'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDPRO;
-                if ($Datos->IDEST == 5) {
-                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$Datos->IDPRO).',6)"><i class="fa fa-check"></i> '.$Datos->ESTPRO.'</button>';
-                }else{
-                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$Datos->IDPRO).',5)"><i class="fa fa-times"></i> '.$Datos->ESTPRO.'</button>'; 
+                if ($permiso[0]->btn_del == 1) 
+                {
+                    if ($Datos->IDEST == 5) {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$Datos->IDPRO).',6)"><i class="fa fa-check"></i> '.$Datos->ESTPRO.'</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$Datos->IDPRO).',5)"><i class="fa fa-times"></i> '.$Datos->ESTPRO.'</button>'; 
+                    }
+                }
+                else
+                {
+                    if ($Datos->IDEST == 5) {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> '.$Datos->ESTPRO.'</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> '.$Datos->ESTPRO.'</button>'; 
+                    }
                 }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDPRO),
@@ -293,7 +300,7 @@ class Proveedor_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $idproveedorxml = $xml->createElement('IDP', $id_proveedor);
@@ -394,13 +401,13 @@ class Proveedor_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox); 
             
             $razonsocialxml = $xml->createElement('RAZ', strtoupper($request['razon_social']));
             $razonsocialxml =$root->appendChild($razonsocialxml); 
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
@@ -440,6 +447,7 @@ class Proveedor_Controller extends BaseSoapController
             //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_proveedores'],['btn_view',1]])->get();
             
         $total_pages = 0;
         if (!$sidx) {
@@ -460,10 +468,21 @@ class Proveedor_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['PROVEEDOR']->IDPRO;
-            if ($datos['PROVEEDOR']->IDEST == 5) {
-                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$datos['PROVEEDOR']->IDPRO).',6)"><i class="fa fa-check"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>';
-            }else{
-                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$datos['PROVEEDOR']->IDPRO).',5)"><i class="fa fa-times"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>'; 
+            if ($permiso[0]->btn_del == 1) 
+            {
+                if ($datos['PROVEEDOR']->IDEST == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$datos['PROVEEDOR']->IDPRO).',6)"><i class="fa fa-check"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$datos['PROVEEDOR']->IDPRO).',5)"><i class="fa fa-times"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>'; 
+                }
+            }
+            else
+            {
+                if ($datos['PROVEEDOR']->IDEST == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> '.$datos['PROVEEDOR']->ESTPRO.'</button>'; 
+                }
             }
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['PROVEEDOR']->IDPRO),
@@ -490,10 +509,21 @@ class Proveedor_Controller extends BaseSoapController
         {
            foreach ($datos['PROVEEDOR'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDPRO;
-                if ($Datos->IDEST == 5) {
-                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$Datos->IDPRO).',6)"><i class="fa fa-check"></i> '.$Datos->ESTPRO.'</button>';
-                }else{
-                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$Datos->IDPRO).',5)"><i class="fa fa-times"></i> '.$Datos->ESTPRO.'</button>'; 
+                if ($permiso[0]->btn_del == 1) 
+                {
+                    if ($Datos->IDEST == 5) {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$Datos->IDPRO).',6)"><i class="fa fa-check"></i> '.$Datos->ESTPRO.'</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_proveedor('.trim((integer)$Datos->IDPRO).',5)"><i class="fa fa-times"></i> '.$Datos->ESTPRO.'</button>'; 
+                    }
+                }
+                else
+                {
+                    if ($Datos->IDEST == 5) {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> '.$Datos->ESTPRO.'</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> '.$Datos->ESTPRO.'</button>'; 
+                    }
                 }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDPRO),
@@ -508,128 +538,6 @@ class Proveedor_Controller extends BaseSoapController
                 );  
             }
             return response()->json($Lista);
-        }
-    }
-    
-    public function abrir_reporte_lista_proveedores(Request $request)
-    {
-        if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
-        {
-            self::setWsdl();
-            $this->service = InstanceSoapClient::init();
-
-            $xml = new \DomDocument('1.0', 'UTF-8'); 
-            $root = $xml->createElement('CROMOHELP'); 
-            $root = $xml->appendChild($root); 
-
-            $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
-            $usuarioxml =$root->appendChild($usuarioxml);  
-
-            $fecinixml = $xml->createElement('FECINI', $request['fecha_inicio']);
-            $fecinixml =$root->appendChild($fecinixml);
-            
-            $fecfinxml = $xml->createElement('FECFIN', $request['fecha_fin']);
-            $fecfinxml =$root->appendChild($fecfinxml);
-
-            $xml->formatOutput = true;
-
-            $codigo = '054';
-            $trama = $xml->saveXML();
-            //dd($trama);
-
-            $parametros = [
-                "cod" =>$codigo,
-                "trama" => $trama
-            ];
-
-            $respuesta = $this->service->consulta($parametros);
-
-            $array2 = (array) $respuesta;
-            foreach ($array2 as &$valor2) 
-            {
-                $xmlr2 = $valor2 ;
-            }
-            $final2=strlen($xmlr2)-2;
-            $xmlr2=substr($xmlr2, 1, $final2);
-            $xmlr2=$xmlr2;
-            $datos = (array) @simplexml_load_string($xmlr2);
-            //dd($datos['PROVEEDOR']);
-            if($datos['CODERR'] == "00000")
-            {
-                $proveedores = $datos['PROVEEDOR'];
-                $view = \View::make('inventario.reportes.vw_listar_proveedores',compact('proveedores'))->render();
-                $pdf = \App::make('dompdf.wrapper');
-                $pdf->loadHTML($view)->setPaper('a4','landscape');
-                return $pdf->stream("LISTA DE PROVEEDORES".".pdf");
-            }
-            else
-            {
-                return $datos['MSGERR'];
-            }
-        }
-        else
-        {
-            return view('errors/vw_sin_acceso');
-        }
-    }
-    
-    public function abrir_reporte_lista_proveedores_excel(Request $request)
-    {
-        if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
-        {
-            self::setWsdl();
-            $this->service = InstanceSoapClient::init();
-
-            $xml = new \DomDocument('1.0', 'UTF-8'); 
-            $root = $xml->createElement('CROMOHELP'); 
-            $root = $xml->appendChild($root); 
-
-            $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
-            $usuarioxml =$root->appendChild($usuarioxml);  
-
-            $fecinixml = $xml->createElement('FECINI', $request['fecha_inicio']);
-            $fecinixml =$root->appendChild($fecinixml);
-            
-            $fecfinxml = $xml->createElement('FECFIN', $request['fecha_fin']);
-            $fecfinxml =$root->appendChild($fecfinxml);
-
-            $xml->formatOutput = true;
-
-            $codigo = '054';
-            $trama = $xml->saveXML();
-            //dd($trama);
-
-            $parametros = [
-                "cod" =>$codigo,
-                "trama" => $trama
-            ];
-
-            $respuesta = $this->service->consulta($parametros);
-
-            $array2 = (array) $respuesta;
-            foreach ($array2 as &$valor2) 
-            {
-                $xmlr2 = $valor2 ;
-            }
-            $final2=strlen($xmlr2)-2;
-            $xmlr2=substr($xmlr2, 1, $final2);
-            $xmlr2=$xmlr2;
-            $datos = (array) @simplexml_load_string($xmlr2);
-            //dd($datos['PROVEEDOR']);
-            if($datos['CODERR'] == "00000")
-            {
-                $proveedores = $datos['PROVEEDOR'];
-                return Excel::download(new ProveedorExport($proveedores), 'LISTA DE PROVEEDORES.xlsx');
-                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $doc->saveHtml(),true);
-            }
-            else
-            {
-                return $datos['MSGERR'];
-            }
-        }
-        else
-        {
-            return view('errors/vw_sin_acceso');
         }
     }
 

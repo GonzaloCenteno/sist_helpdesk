@@ -13,21 +13,17 @@ class Valores_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            if (session('rol') == 1 || session('rol') == 2) 
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_valores'],['btn_view',1]])->get();
+            if ($permiso->count() == 0) 
             {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-                return view('encuesta/vw_valores',compact('tblmenu_men','tblmenu_men2','tblmenu_men3'));
+                return view('errors/vw_sin_permiso',compact('menu'));
             }
-            else
-            {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
-            }     
+            return view('encuesta/vw_valores',compact('menu','permiso'));
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -92,7 +88,7 @@ class Valores_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $desxml = $xml->createElement('DES', strtoupper($request['desc_valor']));
@@ -151,6 +147,7 @@ class Valores_Controller extends BaseSoapController
         }
         $totalg = DB::select("select count(*) as total from cromohelp.tbl_valores");
         $sql = DB::table('cromohelp.tbl_valores')->orderBy($sidx, $sord)->limit($limit)->offset($start)->get();
+        $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_valores'],['btn_view',1]])->get();
 
         $total_pages = 0;
         if (!$sidx) {
@@ -169,10 +166,21 @@ class Valores_Controller extends BaseSoapController
         $Lista->records = $count;
         foreach ($sql as $Index => $Datos) {
             $Lista->rows[$Index]['id'] = $Datos->val_id; 
-            if ($Datos->val_est == 5) {
-                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_valor('.trim($Datos->val_id).',6)"><i class="fa fa-check"></i> ACTIVO</button>';
-            }else{
-                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_valor('.trim($Datos->val_id).',5)"><i class="fa fa-times"></i> DESACTIVO</button>'; 
+            if ($permiso[0]->btn_del == 1) 
+            {
+                if ($Datos->val_est == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_valor('.trim($Datos->val_id).',6)"><i class="fa fa-check"></i> ACTIVO</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_valor('.trim($Datos->val_id).',5)"><i class="fa fa-times"></i> DESACTIVO</button>'; 
+                }
+            }
+            else
+            {
+                if ($Datos->val_est == 5) {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> ACTIVO</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> DESACTIVO</button>'; 
+                }
             }
             $Lista->rows[$Index]['cell'] = array(
                 trim($Datos->val_id),
@@ -199,7 +207,7 @@ class Valores_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
         
         $idvalorxml = $xml->createElement('ID', $request['id_valor']);

@@ -14,16 +14,19 @@ class EvaluacionExport implements FromView,WithTitle,WithEvents
 {
  
     private $data;
+    private $count;
 
-    public function __construct($data)
+    public function __construct($data,$count)
     {
         $this->data = $data;
+        $this->count = $count;
     }
     
     public function view(): View
     {
-        return view('inventario.reportes.vw_evaluaciones_ex', [
-            'calificacion' => $this->data
+        return view('reportes.excel.vw_evaluaciones_ex', [
+            'calificacion' => $this->data,
+            'count' => $this->count
         ]);
     }
     

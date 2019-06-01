@@ -22,7 +22,7 @@ class ProveedorExport implements FromView,WithTitle,WithEvents
     
     public function view(): View
     {
-        return view('inventario.reportes.vw_listar_proveedores_ex', [
+        return view('reportes.excel.vw_listar_proveedores_ex', [
             'proveedores' => $this->data
         ]);
     }

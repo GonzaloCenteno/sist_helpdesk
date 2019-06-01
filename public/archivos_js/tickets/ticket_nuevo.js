@@ -79,7 +79,7 @@ jQuery(document).on("click", "#btn_enviar_datos", function(){
             }
             else
             {
-                ValidacionServidor(data.error);
+                MensajeAdvertencia(data.respuesta[0]);
             }
         },
         error: function(data) {

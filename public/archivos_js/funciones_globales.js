@@ -130,3 +130,21 @@ function soloNumeroTab(evt) {// con guin y slash ( - / )
         return false;
     }
 }
+
+function sin_permiso()
+{
+    swal({
+      type: 'info',
+      confirmButtonText: 'ACEPTAR',
+      title: 'NO TIENES PERMISO PARA REALIZAR ESTA ACCION',
+      allowOutsideClick: false,
+      allowEscapeKey:false
+    }).then(
+        function () {},
+        function (dismiss) {
+          if (dismiss === 'timer') {
+            console.log('I was closed by the timer')
+          }
+        }
+      )
+}

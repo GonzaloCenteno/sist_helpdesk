@@ -1,6 +1,15 @@
 @extends('principal.p_inicio')
 
 @section('content')
+<style>
+.modal-body {
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}       
+hr {
+    border: 1px solid #7A7878;
+}
+</style>
 <div class="row gap-20 masonry pos-r">
     <div class="masonry-sizer col-md-6"></div>
     <div class="masonry-item col-md-12">
@@ -49,7 +58,7 @@
                                     <div class="input-group-addon bgc-white bd bdwR-0">
                                         <i class="ti-calendar"></i>
                                     </div>
-                                    <input type="text" class="form-control start-date rounded" id="txfecha" placeholder="SELECCIONAR UNA FECHA" name="txfecha" data-dateformat='dd/mm/yy' data-mask="99/99/9999" value="<?php echo date("d/m/Y"); ?>" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
+                                    <input type="text" class="form-control rounded" readonly="true" id="txfecha" placeholder="SELECCIONAR UNA FECHA" name="txfecha" data-dateformat='dd/mm/yy' data-mask="99/99/9999" value="<?php echo date("d/m/Y"); ?>" >
                                 </div>
                             </div>
                         </div>
@@ -67,7 +76,11 @@
                         <input type='file' name='file' id='file' placeholder="CARGAR UN ARCHIVO">
                     </div>
                     <div class="form-group">
-                        <button type="button" id="btn_enviar_datos" class="btn btn-primary btn-lg btn-block">ENVIAR DATOS</button>
+                        @if( $permiso[0]->btn_new == 1 )
+                            <button type="button" id="btn_enviar_datos" class="btn btn-primary btn-lg btn-block">ENVIAR DATOS</button>
+                        @else
+                            <button type="button"  onclick="sin_permiso();" class="btn btn-primary btn-lg btn-block">ENVIAR DATOS</button>
+                        @endif
                     </div>
                 </form>
             </div>
@@ -77,5 +90,9 @@
 </div>
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/tickets/ticket_nuevo.js') }}"></script>
+<script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+</script>
 @stop
 @endsection

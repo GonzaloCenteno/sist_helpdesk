@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Tbl_item;
 use Validator;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\EvaluacionExport;
 
 class Item_Controller extends BaseSoapController
 {
@@ -16,32 +14,24 @@ class Item_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            if (session('rol') == 1 || session('rol') == 2) 
-            {
-                $tblmenu_men = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',1]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men2 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',2]])->orderBy('menu_id','asc')->get();
-                $tblmenu_men3 = DB::table('tblmenu_men')->where([['menu_sist',session('menu_sist')],['menu_rol',session('menu_rol')],['menu_est',1],['menu_niv',3]])->orderBy('menu_id','asc')->get();
-                
-                $datos =& $this->traer_datos_item();
-                //dd($datos);
-                if($datos['CODERR']=='00000')
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_items'],['btn_view',1]])->get();
+                if ($permiso->count() == 0) 
                 {
-                    $nummar = $datos['NUMAR'];
-                    $numpro = $datos['NUMPRO'];
-                    $numfac = $datos['NUMFAC'];
-                    return view('inventario/vw_item',compact('tblmenu_men','tblmenu_men2','tblmenu_men3','nummar','numpro','numfac','datos'));
+                    return view('errors/vw_sin_permiso',compact('menu'));
                 }
-
-                echo "HUBO UN ERROR TRAENDO LOS DATOS";
-            }
-            else
+            $datos =& $this->traer_datos_item();
+            if($datos['CODERR']=='00000')
             {
-                return view('errors/vw_sin_permiso',compact('tblmenu_men'));
-            }     
+                $nummar = $datos['NUMAR'];
+                $numpro = $datos['NUMPRO'];
+                $numfac = $datos['NUMFAC'];
+                return view('inventario/vw_item',compact('menu','permiso','nummar','numpro','numfac','datos'));
+            }
         }
         else
         {
-            return view('errors/vw_sin_acceso',compact('tblmenu_men'));
+            return view('errors/vw_sin_acceso');
         }
     }
 
@@ -60,14 +50,6 @@ class Item_Controller extends BaseSoapController
             if ($request['grid'] == 'buscar_items') 
             {
                 return $this->crear_tabla_buscar_items($request);
-            }
-            if ($request['show'] == 'evaluaciones') 
-            {
-                return $this->abrir_reporte_evaluaciones($request);
-            }
-            if ($request['show'] == 'evaluaciones_excel') 
-            {
-                return $this->abrir_reporte_evaluaciones_excel($request);
             }
         }
     }
@@ -125,10 +107,10 @@ class Item_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);  
 
             $orderby1 = $xml->createElement('ORDERBY1',$sidx); 
@@ -168,6 +150,7 @@ class Item_Controller extends BaseSoapController
             //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_items'],['btn_view',1]])->get();
             
         $total_pages = 0;
         if (!$sidx) {
@@ -188,18 +171,39 @@ class Item_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['ITEM']->IDITEM;
-            if ($datos['ITEM']->ESTITE == 'Activo') {
-                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',6)"><i class="fa fa-check"></i> Activo</button>';
-            }else{
-                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
+            if ($permiso[0]->btn_del == 1) 
+            {
+                if ($datos['ITEM']->ESTITE == 'Activo') {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',6)"><i class="fa fa-check"></i> Activo</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
+                }
+            }
+            else
+            {
+                if ($datos['ITEM']->ESTITE == 'Activo') {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> Activo</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> Desactivo</button>'; 
+                }
             }
             
-            if ($datos['ITEM']->CALIF == 0) {
-                $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
-            }else{
-                $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+            if ($permiso[0]->btn_new == 1) 
+            {
+                if ($datos['ITEM']->CALIF == 0) {
+                    $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
+                }else{
+                    $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                }
             }
-            
+            else
+            {
+                if ($datos['ITEM']->CALIF == 0) {
+                    $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" onclick="sin_permiso();"><i class="fa fa-th-list"></i> Evaluar</button>';
+                }else{
+                    $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                }
+            }
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['ITEM']->IDITEM),
                 trim($datos['ITEM']->DESITE),
@@ -230,15 +234,38 @@ class Item_Controller extends BaseSoapController
         {
            foreach ($datos['ITEM'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDITEM;
-                if ($Datos->ESTITE == 'Activo') {
-                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',6)"><i class="fa fa-check"></i> Activo</button>';
-                }else{
-                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
+                if ($permiso[0]->btn_del == 1) 
+                {
+                    if ($Datos->ESTITE == 'Activo') {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',6)"><i class="fa fa-check"></i> Activo</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
+                    }
                 }
-                if ($Datos->CALIF == 0) {
-                    $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
-                }else{
-                    $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                else
+                {
+                    if ($Datos->ESTITE == 'Activo') {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> Activo</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> Desactivo</button>'; 
+                    }
+                }
+                
+                if ($permiso[0]->btn_new == 1) 
+                {
+                    if ($Datos->CALIF == 0) {
+                        $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
+                    }else{
+                        $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                    }
+                }
+                else
+                {
+                    if ($Datos->CALIF == 0) {
+                        $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" onclick="sin_permiso();"><i class="fa fa-th-list"></i> Evaluar</button>';
+                    }else{
+                        $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                    }
                 }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDITEM),
@@ -323,10 +350,10 @@ class Item_Controller extends BaseSoapController
             $root = $xml->createElement('CROMOHELP'); 
             $root = $xml->appendChild($root); 
 
-            $usuariox = $xml->createElement('USU',session('nombre_usuario'));
+            $usuariox = $xml->createElement('USU',session('id_usuario'));
             $usuariox =$root->appendChild($usuariox);  
             
-            $rolxml = $xml->createElement('NIVEL',session('rol'));
+            $rolxml = $xml->createElement('NIVEL',session('sro_id'));
             $rolxml =$root->appendChild($rolxml);
             
             $wherexml = $xml->createElement('WHERE', $where);
@@ -369,6 +396,7 @@ class Item_Controller extends BaseSoapController
             //dd($array['NUMTIC']);
             //dd($array['TICKETS'][0]->IDTIC);
             //$totalg = $datos->NUMTIC[0];
+            $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_items'],['btn_view',1]])->get();
             
         $total_pages = 0;
         if (!$sidx) {
@@ -389,15 +417,38 @@ class Item_Controller extends BaseSoapController
         if ($datos['NUMTIC'] == 1) 
         {
             $Lista->rows[0]['id'] = (integer)$datos['ITEM']->IDITEM;
-            if ($datos['ITEM']->ESTITE == 'Activo') {
-                $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',6)"><i class="fa fa-check"></i> Activo</button>';
-            }else{
-                $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
+            if ($permiso[0]->btn_del == 1) 
+            {
+                if ($datos['ITEM']->ESTITE == 'Activo') {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',6)"><i class="fa fa-check"></i> Activo</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$datos['ITEM']->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
+                }
             }
-            if ($datos['ITEM']->CALIF == 0) {
-                $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
-            }else{
-                $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+            else
+            {
+                if ($datos['ITEM']->ESTITE == 'Activo') {
+                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> Activo</button>';
+                }else{
+                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> Desactivo</button>'; 
+                }
+            }
+            
+            if ($permiso[0]->btn_new == 1) 
+            {
+                if ($datos['ITEM']->CALIF == 0) {
+                    $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
+                }else{
+                    $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                }
+            }
+            else
+            {
+                if ($datos['ITEM']->CALIF == 0) {
+                    $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" onclick="sin_permiso();"><i class="fa fa-th-list"></i> Evaluar</button>';
+                }else{
+                    $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                }
             }
             $Lista->rows[0]['cell'] = array(
                 trim((integer)$datos['ITEM']->IDITEM),
@@ -429,15 +480,38 @@ class Item_Controller extends BaseSoapController
         {
            foreach ($datos['ITEM'] as $Index => $Datos) {
                 $Lista->rows[$Index]['id'] = (integer)$Datos->IDITEM;
-                if ($Datos->ESTITE == 'Activo') {
-                    $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',6)"><i class="fa fa-check"></i> Activo</button>';
-                }else{
-                    $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
+                if ($permiso[0]->btn_del == 1) 
+                {
+                    if ($Datos->ESTITE == 'Activo') {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',6)"><i class="fa fa-check"></i> Activo</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="cambiar_estado_item('.trim((integer)$Datos->IDITEM).',5)"><i class="fa fa-times"></i> Desactivo</button>'; 
+                    }
                 }
-                if ($Datos->CALIF == 0) {
-                    $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
-                }else{
-                    $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                else
+                {
+                    if ($Datos->ESTITE == 'Activo') {
+                        $nuevo = '<button class="btn btn-lg btn-success" type="button" onclick="sin_permiso();"><i class="fa fa-check"></i> Activo</button>';
+                    }else{
+                        $nuevo = '<button class="btn btn-lg btn-danger" type="button" onclick="sin_permiso();"><i class="fa fa-times"></i> Desactivo</button>'; 
+                    }
+                }
+                
+                if ($permiso[0]->btn_new == 1) 
+                {
+                    if ($Datos->CALIF == 0) {
+                        $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" id="btn_evaluar_item" data-toggle="modal" data-target="#Modal_Evaluacion" data-backdrop="static" data-keyboard="false"><i class="fa fa-th-list"></i> Evaluar</button>';
+                    }else{
+                        $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                    }
+                }
+                else
+                {
+                    if ($Datos->CALIF == 0) {
+                        $calificacion = '<button class="btn btn-lg" style="background-color:#D48411;color:white;" type="button" onclick="sin_permiso();"><i class="fa fa-th-list"></i> Evaluar</button>';
+                    }else{
+                        $calificacion = '<button class="btn btn-lg btn-danger" type="button"><i class="fa fa-check"></i> Evaluado</button>'; 
+                    }
                 }
                 $Lista->rows[$Index]['cell'] = array(
                     trim((integer)$Datos->IDITEM),
@@ -469,7 +543,7 @@ class Item_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
 
         $iditemxml = $xml->createElement('ID', $id_item);
@@ -553,7 +627,7 @@ class Item_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
         
         $descripcionxml = $xml->createElement('DES', strtoupper($request['descripcion']));
@@ -619,7 +693,7 @@ class Item_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
+        $usuarioxml = $xml->createElement('USU',session('id_usuario'));
         $usuarioxml =$root->appendChild($usuarioxml);  
         
         $iditemxml = $xml->createElement('ID', $request['id_item']);
@@ -676,75 +750,6 @@ class Item_Controller extends BaseSoapController
         ]);
     }
     
-    public function abrir_reporte_evaluaciones(Request $request)
-    {
-        if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
-        {
-            self::setWsdl();
-            $this->service = InstanceSoapClient::init();
-
-            $xml = new \DomDocument('1.0', 'UTF-8'); 
-            $root = $xml->createElement('CROMOHELP'); 
-            $root = $xml->appendChild($root); 
-
-            $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
-            $usuarioxml =$root->appendChild($usuarioxml);  
-
-            $fecinixml = $xml->createElement('FECINI', $request['fecha_inicio']);
-            $fecinixml =$root->appendChild($fecinixml);
-            
-            $fecfinxml = $xml->createElement('FECFIN', $request['fecha_fin']);
-            $fecfinxml =$root->appendChild($fecfinxml);
-
-            $xml->formatOutput = true;
-
-            $codigo = '053';
-            $trama = $xml->saveXML();
-            //dd($trama);
-
-            $parametros = [
-                "cod" =>$codigo,
-                "trama" => $trama
-            ];
-
-            $respuesta = $this->service->consulta($parametros);
-
-            $array2 = (array) $respuesta;
-            foreach ($array2 as &$valor2) 
-            {
-                $xmlr2 = $valor2 ;
-            }
-            $final2=strlen($xmlr2)-2;
-            $xmlr2=substr($xmlr2, 1, $final2);
-            $xmlr2=$xmlr2;
-            $datos = (array) @simplexml_load_string($xmlr2);
-            //dd($datos['CALIFICACION']);
-            if($datos['CODERR'] == "00000")
-            {
-                if ($datos['NUMTIC'] != 0) 
-                {
-                    $calificacion = $datos['CALIFICACION'];
-                    $view = \View::make('inventario.reportes.vw_evaluaciones',compact('calificacion'))->render();
-                    $pdf = \App::make('dompdf.wrapper');
-                    $pdf->loadHTML($view)->setPaper('a4','landscape');
-                    return $pdf->stream("EVALUACION DE PROVEEDORES".".pdf");
-                }
-                else
-                {
-                    return "NO SE ENCONTRARON DATOS";
-                }
-            }
-            else
-            {
-                return $datos['MSGERR'];
-            }
-        }
-        else
-        {
-            return view('errors/vw_sin_acceso');
-        }  
-    }
-    
     public function &traer_datos_item()
     {
         self::setWsdl();
@@ -754,10 +759,10 @@ class Item_Controller extends BaseSoapController
         $root = $xml->createElement('CROMOHELP'); 
         $root = $xml->appendChild($root); 
 
-        $usuariox = $xml->createElement('USER',session('nombre_usuario')); 
+        $usuariox = $xml->createElement('USER',session('id_usuario')); 
         $usuariox =$root->appendChild($usuariox);  
 
-        $ipx=$xml->createElement('NIVEL',session('rol')); 
+        $ipx=$xml->createElement('NIVEL',session('sro_id')); 
         $ipx =$root->appendChild($ipx); 
 
         $xml->formatOutput = true;
@@ -782,73 +787,6 @@ class Item_Controller extends BaseSoapController
         $datos = (array) @simplexml_load_string($xmlr2);
         
         return $datos;
-    }
-    
-    public function abrir_reporte_evaluaciones_excel(Request $request)
-    {
-        if ($request->session()->has('id_usuario') && session('rol') == 1 || session('rol') == 2)
-        {
-            self::setWsdl();
-            $this->service = InstanceSoapClient::init();
-
-            $xml = new \DomDocument('1.0', 'UTF-8'); 
-            $root = $xml->createElement('CROMOHELP'); 
-            $root = $xml->appendChild($root); 
-
-            $usuarioxml = $xml->createElement('USU',session('nombre_usuario'));
-            $usuarioxml =$root->appendChild($usuarioxml);  
-
-            $fecinixml = $xml->createElement('FECINI', $request['fecha_inicio']);
-            $fecinixml =$root->appendChild($fecinixml);
-            
-            $fecfinxml = $xml->createElement('FECFIN', $request['fecha_fin']);
-            $fecfinxml =$root->appendChild($fecfinxml);
-
-            $xml->formatOutput = true;
-
-            $codigo = '053';
-            $trama = $xml->saveXML();
-            //dd($trama);
-
-            $parametros = [
-                "cod" =>$codigo,
-                "trama" => $trama
-            ];
-
-            $respuesta = $this->service->consulta($parametros);
-
-            $array2 = (array) $respuesta;
-            foreach ($array2 as &$valor2) 
-            {
-                $xmlr2 = $valor2 ;
-            }
-            $final2=strlen($xmlr2)-2;
-            $xmlr2=substr($xmlr2, 1, $final2);
-            $xmlr2=$xmlr2;
-            $datos = (array) @simplexml_load_string($xmlr2);
-            //dd($datos['CALIFICACION']);
-            if($datos['CODERR'] == "00000")
-            {
-                if ($datos['NUMTIC'] != 0) 
-                {
-                    $calificacion = $datos['CALIFICACION'];
-                    return Excel::download(new EvaluacionExport($calificacion), 'EVALUACIÓN DE PROVEEDORES.xlsx');
-                    \PhpOffice\PhpWord\Shared\Html::addHtml($section, $doc->saveHtml(),true);
-                }
-                else
-                {
-                    return "NO SE ENCONTRARON DATOS";
-                }
-            }
-            else
-            {
-                return $datos['MSGERR'];
-            }
-        }
-        else
-        {
-            return view('errors/vw_sin_acceso');
-        }
     }
     
 }

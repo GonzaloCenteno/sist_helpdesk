@@ -15,12 +15,25 @@
             <div class="mT-30" style="padding-bottom: 499px;">
 
                 <div class="form-row">
-                    <div class="form-group col-md-3">
-                        <button id="btn_nuevo_valor" data-toggle="modal" data-target="#Modal_Valor" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
-                    </div>
-                    <div class="form-group col-md-3">
-                        <button class="btn btn-block" id="btn_modificar_valor" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
-                    </div>
+                    @if( $permiso[0]->btn_new == 1 )
+                        <div class="form-group col-md-3">
+                            <button id="btn_nuevo_valor" data-toggle="modal" data-target="#Modal_Valor" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        </div>
+                    @else
+                        <div class="form-group col-md-3">
+                            <button onclick="sin_permiso();" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        </div> 
+                    @endif
+                    @if( $permiso[0]->btn_edit == 1 )
+                        <button style="display:none;" id="btn_nuevo_valor" data-toggle="modal" data-target="#Modal_Valor" data-backdrop="static" data-keyboard="false" class="btn btn-success btn-block" type="button"><i class="fa fa-plus-square"></i> NUEVO</button>
+                        <div class="form-group col-md-3">
+                            <button class="btn btn-block" id="btn_modificar_valor" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        </div>
+                    @else
+                        <div class="form-group col-md-3">
+                            <button class="btn btn-block" onclick="sin_permiso();" style="background-color:#D48411;color:white;" type="button"><i class="fa fa-pencil"></i> MODIFICAR</button>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="form-row">
@@ -84,5 +97,65 @@
 
 @section('page-js-script')
 <script language="JavaScript" type="text/javascript" src="{{ asset('archivos_js/encuesta/valores.js') }}"></script>
+<script>
+    $('#{{ $permiso[0]->men_sistema }}').addClass('open');
+    $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+    jQuery(document).ready(function($){
+    
+        jQuery("#tabla_valores").jqGrid({
+            url: 'valores/0?grid=valores',
+            datatype: 'json', mtype: 'GET',
+            height: '450px', autowidth: true,
+            toolbarfilter: true,
+            sortable:false,
+            pgbuttons: false,
+            pgtext: null,
+            //cmTemplate: { sortable: false },
+            colNames: ['ID', 'DESCRIPCION','IMAGEN','ESTADO'],
+            rowNum: 10, sortname: 'val_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_valores" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE VALORES -', align: "center",
+            colModel: [
+                {name: 'val_id', index: 'val_id', align: 'left',width: 10, hidden:true},
+                {name: 'val_desc', index: 'val_desc', align: 'left', width: 80},
+                {name: 'val_img', index: 'val_img', align: 'center', width: 20, formatter: formatImage},
+                {name: 'val_est', index: 'val_est', align: 'center', width: 20}
+            ],
+            pager: '#paginador_tabla_valores',
+            rowList: [10, 20, 30, 40, 50, 100000000],
+            loadComplete: function() {
+                $("option[value=100000000]").text('TODOS');
+            },
+            gridComplete: function () {
+                    var idarray = jQuery('#tabla_valores').jqGrid('getDataIDs');
+                    if (idarray.length > 0) {
+                    var firstid = jQuery('#tabla_valores').jqGrid('getDataIDs')[0];
+                            $("#tabla_valores").setSelection(firstid);    
+                        }
+                },
+            onSelectRow: function (Id){},
+            ondblClickRow: function (Id)
+            {
+                permiso = {!! json_encode($permiso[0]->btn_edit) !!};
+                if(permiso == 1)
+                {
+                    $('#btn_modificar_valor').click();
+                }
+                else
+                {
+                    sin_permiso();
+                }
+            }
+        });
+
+        function formatImage(cellValue, options, rowObject) {
+            var imageHtml = "<img src='data:image/png;base64," + cellValue + "' originalValue='" + cellValue + "' style='width: 60px;height: 60px;border: 1px solid #fff; outline: 1px solid #bfbfbf;'/>";
+            return imageHtml;
+        }
+
+        $(window).on('resize.jqGrid', function () {
+            $("#tabla_valores").jqGrid('setGridWidth', $("#contenedor").width());
+        });
+
+    });
+</script>
 @stop
 @endsection
