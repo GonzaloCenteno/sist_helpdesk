@@ -294,7 +294,7 @@
             pgtext: null,
             //cmTemplate: { sortable: false },
             colNames: ['ID', 'DESCRIPCION', 'SERIE', 'CANT.', 'IDMARCA', 'MARCA','IDPROVEEODR', 'PROVEE.','IDFACTURA', 'FACTURA','PRECIO','FECHA','ESTADO','EVALUACION'],
-            rowNum: 10, sortname: 'item_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_item" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE ITEMS -', align: "center",
+            rowNum: 20, sortname: 'item_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_item" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE ITEMS -', align: "center",
             colModel: [
                 {name: 'item_id', index: 'item_id', align: 'left',width: 10, hidden:true},
                 {name: 'item_desc', index: 'item_desc', align: 'left', width: 25},
@@ -312,7 +312,7 @@
                 {name: 'id_calif', index: 'id_calif', align: 'center', width: 12}
             ],
             pager: '#paginador_tabla_items',
-            rowList: [10, 20, 30, 40, 50, 100000000],
+            rowList: [20, 30, 40, 50, 100000000],
             loadComplete: function() {
                 $("option[value=100000000]").text('TODOS');
             },

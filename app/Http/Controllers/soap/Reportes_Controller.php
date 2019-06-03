@@ -9,6 +9,7 @@ use App\Exports\ProveedorExport;
 use App\Exports\EvaluacionExport;
 use App\Exports\IncidentesExport;
 use App\Exports\CalificacionExport;
+use App\Exports\InventarioExport;
 
 class Reportes_Controller extends BaseSoapController
 {
@@ -70,6 +71,14 @@ class Reportes_Controller extends BaseSoapController
             if ($request['show'] == 'calificacion_excel') 
             {
                 return $this->abrir_reporte_registro_calificacion_excel($request);
+            }
+            if ($request['show'] == 'inventario') 
+            {
+                return $this->abrir_reporte_gestion_inventario($request);
+            }
+            if ($request['show'] == 'inventario_excel') 
+            {
+                return $this->abrir_reporte_gestion_inventario_excel($request);
             }
         }
     }
@@ -339,12 +348,13 @@ class Reportes_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario') && session('sro_id') == 1 || session('sro_id') == 2)
         {
-            $datos = DB::select("select cabt_feccre::date as fecha,cabt_feccre::date || ' ' ||TO_CHAR(cabt_feccre,'HH24:MI:SS') AS fec_completa ,are_desc,cabt_asunto,desc_est,cabt_usucre,pvt_desc,cabt_usutec ,prio_desc
+            $datos = DB::select("select suba_desc,cabt_feccre::date as fecha,cabt_feccre::date || ' ' ||TO_CHAR(cabt_feccre,'HH24:MI:SS') AS fec_completa ,are_desc,cabt_asunto,desc_est,cabt_usucre,pvt_desc,cabt_usutec ,prio_desc
                                     from cromohelp.tbl_cabticket
                                     inner join cromohelp.tbl_estado on id_est=cabt_est
                                     inner join cromohelp.tbl_area on are_id=cabt_carea
+                                    inner join cromohelp.tbl_subarea on cabt_subarea = suba_id
                                     inner join cromohelp.tbl_pvt on pvt_id=cabt_pvt
-                                    inner join cromohelp.tbl_prioridad on prio_id=cabt_pri where cabt_feccre::date between '".$request['fecha_inicio']."' and '".$request['fecha_fin']."' ");
+                                    inner join cromohelp.tbl_prioridad on prio_id=cabt_pri where cabt_feccre::date between '".$request['fecha_inicio']."' and '".$request['fecha_fin']."' order by cabt_feccre,are_desc,suba_desc asc");
             if (count($datos) > 0) 
             {
                 $view = \View::make('reportes.pdf.vw_gestion_incidentes',compact('datos'))->render();
@@ -367,12 +377,13 @@ class Reportes_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario') && session('sro_id') == 1 || session('sro_id') == 2)
         {
-            $datos = DB::select("select cabt_feccre::date as fecha,cabt_feccre::date || ' ' ||TO_CHAR(cabt_feccre,'HH24:MI:SS') AS fec_completa ,are_desc,cabt_asunto,desc_est,cabt_usucre,pvt_desc,cabt_usutec ,prio_desc
+            $datos = DB::select("select suba_desc,cabt_feccre::date as fecha,cabt_feccre::date || ' ' ||TO_CHAR(cabt_feccre,'HH24:MI:SS') AS fec_completa ,are_desc,cabt_asunto,desc_est,cabt_usucre,pvt_desc,cabt_usutec ,prio_desc
                                     from cromohelp.tbl_cabticket
                                     inner join cromohelp.tbl_estado on id_est=cabt_est
                                     inner join cromohelp.tbl_area on are_id=cabt_carea
+                                    inner join cromohelp.tbl_subarea on cabt_subarea = suba_id
                                     inner join cromohelp.tbl_pvt on pvt_id=cabt_pvt
-                                    inner join cromohelp.tbl_prioridad on prio_id=cabt_pri where cabt_feccre::date between '".$request['fecha_inicio']."' and '".$request['fecha_fin']."' ");
+                                    inner join cromohelp.tbl_prioridad on prio_id=cabt_pri where cabt_feccre::date between '".$request['fecha_inicio']."' and '".$request['fecha_fin']."' order by cabt_feccre,are_desc,suba_desc asc");
             if (count($datos) > 0) 
             {
                 return Excel::download(new IncidentesExport($datos), 'INCIDENTES.xlsx');
@@ -452,6 +463,60 @@ class Reportes_Controller extends BaseSoapController
             if (count($datos) > 0) 
             {
                 return Excel::download(new CalificacionExport($datos,$preguntas), 'CALIFICACIONES.xlsx');
+                \PhpOffice\PhpWord\Shared\Html::addHtml($section, $doc->saveHtml(),true);
+            }
+            else
+            {
+                return "NO SE ENCONTRARON DATOS";
+            }
+        }
+        else
+        {
+            return view('errors/vw_sin_acceso');
+        }
+    }
+    
+    public function abrir_reporte_gestion_inventario(Request $request)
+    {
+        if ($request->session()->has('id_usuario') && session('sro_id') == 1 || session('sro_id') == 2)
+        {
+            $datos = DB::select("select a.item_desc,a.item_ser,a.item_cant,a.item_fec,b.mar_desc,c.pro_raz,c.pro_ruc,c.pro_tel from cromohelp.tbl_item a
+                                inner join cromohelp.tbl_marcas b on a.mar_id = b.mar_id and b.mar_est = 5
+                                inner join cromohelp.tbl_proveedor c on a.pro_id = c.pro_id and c.pro_est = 5
+                                where a.item_fec between '".$request['fecha_inicio']."' and '".$request['fecha_fin']."'
+                                order by a.item_fec asc");
+            
+            if (count($datos) > 0) 
+            {
+                $view = \View::make('reportes.pdf.vw_gestion_inventario',compact('datos'))->render();
+                $pdf = \App::make('dompdf.wrapper');
+                $pdf->loadHTML($view)->setPaper('a4','landscape');
+                return $pdf->stream("GESTION DE INVENTARIO".".pdf");
+            }
+            else
+            {
+                return "NO SE ENCONTRARON DATOS";
+            }
+        }
+        else
+        {
+            return view('errors/vw_sin_acceso');
+        }
+    }
+    
+    public function abrir_reporte_gestion_inventario_excel(Request $request)
+    {
+        if ($request->session()->has('id_usuario') && session('sro_id') == 1 || session('sro_id') == 2)
+        {
+            $datos = DB::select("select a.item_desc,a.item_ser,a.item_cant,a.item_fec,b.mar_desc,c.pro_raz,c.pro_ruc,c.pro_tel from cromohelp.tbl_item a
+                                inner join cromohelp.tbl_marcas b on a.mar_id = b.mar_id and b.mar_est = 5
+                                inner join cromohelp.tbl_proveedor c on a.pro_id = c.pro_id and c.pro_est = 5
+                                where a.item_fec between '".$request['fecha_inicio']."' and '".$request['fecha_fin']."'
+                                order by a.item_fec asc");
+            
+            if (count($datos) > 0) 
+            {
+                return Excel::download(new InventarioExport($datos), 'INVENTARIO.xlsx');
                 \PhpOffice\PhpWord\Shared\Html::addHtml($section, $doc->saveHtml(),true);
             }
             else

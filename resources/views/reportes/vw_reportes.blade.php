@@ -326,6 +326,35 @@
                                             </a>
                                         @endif
                                     </div>
+                                    <div class="timeline">
+                                        @if( $permiso[0]->btn_print == 1 )
+                                            <a href="#" id="btn_imprimir_rep_05" data-toggle="modal" data-target="#Modal_Rep_05" data-backdrop="static" data-keyboard="false" class="timeline-content">
+                                                <span class="timeline-year">N° 5</span>
+                                                <div class="timeline-icon">
+                                                    <i class="fa fa-bar-chart"></i>
+                                                </div>
+                                                <div class="content text-center">
+                                                    <h3 class="title">GESTION DE INVENTARIO</h3>
+                                                    <p class="description">
+                                                        GESTION Y MANTENIMIENTO DE INVENTARIO.<small style="color:#ffffff"> LISTA DE PROVEEDORES - SELECCIÓN, EVALUACIÓN Y REEVALUACIÓN DE PROVEEDORES.REEVALUACIÓN DE PROVEEDORES.</small>
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        @else
+                                            <a href="#" onclick="sin_permiso();" class="timeline-content">
+                                                <span class="timeline-year">N° 5</span>
+                                                <div class="timeline-icon">
+                                                    <i class="fa fa-bar-chart"></i>
+                                                </div>
+                                                <div class="content text-center">
+                                                    <h3 class="title">REGISTRO DE CALIFICACIÓN DE LA ATENCIÓN DE TI</h3>
+                                                    <p class="description">
+                                                        GESTION Y MANTENIMIENTO DE INVENTARIO.<small style="color:#ffffff"> LISTA DE PROVEEDORES - SELECCIÓN, EVALUACIÓN Y REEVALUACIÓN DE PROVEEDORES.REEVALUACIÓN DE PROVEEDORES.</small>
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -485,6 +514,51 @@
                 <button type="button" class="btn btn-danger" onclick="imprimir_reporte_04(1);"><i class="fa fa-file-pdf-o"></i> IMPRIMIR PDF</button>
                 <button type="button" class="btn btn-success" onclick="imprimir_reporte_04(2);"><i class="fa fa-file-excel-o"></i> IMPRIMIR EXCEL</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_cerrar_modal_rep_04"><i class="fa fa-times"></i> CERRAR VENTANA</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- VENTANA MODAL REP 05 -->
+<div class="modal fade" id="Modal_Rep_05" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">GESTION Y MANTENIMIENTO DE INVENTARIO</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row" id="FormularioRdbtn">
+                    <div class="form-group col-md-6">
+                        <label class="fw-500">FECHA INICIO:</label>
+                        <div class="timepicker-input input-icon form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon bgc-white bd bdwR-0">
+                                    <i class="ti-calendar"></i>
+                                </div>
+                                <input type="text" class="form-control start-date rounded" id="txt_print_fec_inicio_rep_05" placeholder="SELECCIONAR FECHA INICIO" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="fw-500">FECHA FIN:</label>
+                        <div class="timepicker-input input-icon form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon bgc-white bd bdwR-0">
+                                    <i class="ti-calendar"></i>
+                                </div>
+                                <input type="text" class="form-control start-date rounded" id="txt_print_fec_fin_rep_05" placeholder="SELECCIONAR FECHA FIN" placeholder="Datepicker" data-provide="datepicker" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="imprimir_reporte_05(1);"><i class="fa fa-file-pdf-o"></i> IMPRIMIR PDF</button>
+                <button type="button" class="btn btn-success" onclick="imprimir_reporte_05(2);"><i class="fa fa-file-excel-o"></i> IMPRIMIR EXCEL</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_cerrar_modal_rep_05"><i class="fa fa-times"></i> CERRAR VENTANA</button>
             </div>
         </div>
     </div>

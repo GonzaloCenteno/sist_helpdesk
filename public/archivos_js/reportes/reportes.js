@@ -93,3 +93,31 @@ function imprimir_reporte_04(valor)
         window.open('rep_gerenciales/0?show=calificacion_excel&fecha_inicio='+fecha_inicio+'&fecha_fin='+fecha_fin);
     }
 }
+
+jQuery(document).on("click", "#btn_imprimir_rep_05", function(){
+    $("#txt_print_fec_inicio_rep_05").val('');
+    $("#txt_print_fec_fin_rep_05").val('');
+});
+
+function imprimir_reporte_05(valor)
+{
+    fecha_inicio = $("#txt_print_fec_inicio_rep_05").val();
+    fecha_fin = $("#txt_print_fec_fin_rep_05").val();
+    if (fecha_inicio == '') {
+        mostraralertasconfoco('* EL CAMPO FECHA INICIO ES OBLIGATORIO', '#txt_print_fec_inicio_rep_05');
+        return false;
+    }
+    if (fecha_fin == '') {
+        mostraralertasconfoco('* EL CAMPO FECHA FIN ES OBLIGATORIO', '#txt_print_fec_fin_rep_05');
+        return false;
+    }
+    
+    if (valor === 1) 
+    {
+        window.open('rep_gerenciales/0?show=inventario&fecha_inicio='+fecha_inicio+'&fecha_fin='+fecha_fin);
+    }
+    if (valor ===2) 
+    {
+        window.open('rep_gerenciales/0?show=inventario_excel&fecha_inicio='+fecha_inicio+'&fecha_fin='+fecha_fin);
+    }
+}

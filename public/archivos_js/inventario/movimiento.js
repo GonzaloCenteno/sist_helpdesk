@@ -10,10 +10,18 @@ jQuery(document).on("click", "#btn_nuevo_movimiento", function(){
     $('#titulo_movimiento').text('CREAR NUEVO MOVIMIENTO');
     $('#btn_guardar_movimiento').show();
     $('#btn_actualizar_movimiento').hide();
+    $('#punto_venta_origen').empty();
+    $('#mdl_mitem').val('0');
+    $('#mdl_mitem').change();
     limpiar_datos_movimiento();
 })
 
 jQuery(document).on("click", "#btn_guardar_movimiento", function(){
+    
+    if ($('#mdl_mitem').val() == '0') {
+        mostraralertasconfoco('* DEBES SELECCIONAR UN ITEM DE LA LISTA...', '#mdl_mitem');
+        return false;
+    }
     
     if ($('#mdl_mfecha').val() == '') {
         mostraralertasconfoco('* EL CAMPO FECHA ES OBLIGATORIO...', '#mdl_mfecha');
@@ -63,7 +71,7 @@ jQuery(document).on("click", "#btn_guardar_movimiento", function(){
 jQuery(document).on("click", "#btn_modificar_movimiento", function(){
     
     id_movimiento = $('#tabla_movimientos').jqGrid ('getGridParam', 'selrow');
-    
+    html = '';
     if(id_movimiento){
         $('#btn_nuevo_movimiento').click();
         $('#titulo_movimiento').text('MODIFICAR MOVIMIENTO');
@@ -73,15 +81,14 @@ jQuery(document).on("click", "#btn_modificar_movimiento", function(){
         $('#mdl_mitem').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_item'));
         $('#mdl_mitem').change();
         
-        $('#mdl_pvt_origen').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_ori'));
-        $('#mdl_pvt_origen').change();
+        html = '<input type="hidden" id="mdl_pvt_origen" value="'+$('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_ori')+'"><h4>PUNTO ORIGEN: '+$('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'pvt_ori')+'</h4>'
         
         $('#mdl_pvt_destino').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'id_pvt_des'));
         $('#mdl_pvt_destino').change();
         
         $('#mdl_mfecha').val($('#tabla_movimientos').jqGrid ('getCell', id_movimiento, 'mov_fec'));
 
-                
+        $("#punto_venta_origen").html(html);        
     }else{
         mostraralertasconfoco("NO HAY NINGUN MOVIMIENTO SELECCIONADO","#tabla_movimientos");
     }
@@ -220,4 +227,4 @@ jQuery(document).on("click", "#btn_act_table_movimiento", function(){
     $('#txt_descripcion_item').val('');
     $('#txt_fecha_desde').val('');
     $('#txt_fecha_hasta').val('');
-})
+});

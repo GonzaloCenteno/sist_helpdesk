@@ -20,6 +20,7 @@ function limpiar_datos()
 jQuery(document).on("click", "#btn_enviar_datos", function(){
     tipo = $('#cbxtipo').val();
     area = $('#cbxarea').val();
+    subarea = $('#cbxsubarea').val();
     prioridad = $('#cbxpri').val();
     fecha = $('#txfecha').val();
     titulo = $('#intitulo').val();
@@ -31,6 +32,10 @@ jQuery(document).on("click", "#btn_enviar_datos", function(){
     }
     if (area == '0') {
         mostraralertasconfoco('* DEBES SELECCIONAR UN AREA...', '#cbxarea');
+        return false;
+    }
+    if (subarea == '0') {
+        mostraralertasconfoco('* DEBES SELECCIONAR UNA SUBAREA...', '#cbxsubarea');
         return false;
     }
     if (prioridad == '0') {
@@ -88,4 +93,4 @@ jQuery(document).on("click", "#btn_enviar_datos", function(){
             console.log(data);
         }
     });
-})
+});

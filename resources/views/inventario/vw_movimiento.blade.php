@@ -86,6 +86,7 @@
                     <div class="form-group col-md-12">
                         <label for="mdl_mitem" class="fw-500">SELECCIONE UN ITEM:</label>
                         <select id="mdl_mitem" class="form-control" style="width: 100%;">
+                            <option value="0">..:: DESPLEGAR LISTA ::..</option>
                             @if($num_ite == 1)
                                 <option value="{{ $item->IDIT }}"> {{ $item->DPIT }} - {{ $item->SEIT }} </option>
                             @else
@@ -95,13 +96,8 @@
                             @endif
                         </select>
                     </div>
-                    <div class="form-group col-md-12">
-                        <label for="mdl_pvt_origen" class="fw-500">SELECCIONE UN PUNTO DE VENTA - (ORIGEN):</label>
-                        <select id="mdl_pvt_origen" class="form-control" style="width: 100%;">
-                            @foreach($punto_venta as $pvt_o)
-                                <option value="{{ $pvt_o->IDPVT }}"> {{ $pvt_o->DPVT }} </option>
-                            @endforeach
-                        </select>
+                    <div class="form-group col-md-12 text-center" id="punto_venta_origen">
+                        
                     </div>
                     <div class="form-group col-md-12">
                         <label for="mdl_pvt_destino" class="fw-500">SELECCIONE UN PUNTO DE VENTA - (DESTINO):</label>
@@ -144,22 +140,22 @@
             pgtext: null,
             //cmTemplate: { sortable: false },
             colNames: ['ID', 'IDITEM', 'ITEM', 'IDPVT_O', 'PUNTO VENTA ORIGEN', 'IDPVT_D','PUNTO VENTA DESTINO', 'USUARIO', 'ID_USUARIO', 'FECHA', 'ESTADO'],
-            rowNum: 10, sortname: 'mov_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_movimiento" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE MOVIMIENTOS -', align: "center",
+            rowNum: 20, sortname: 'mov_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_movimiento" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE MOVIMIENTOS -', align: "center",
             colModel: [
                 {name: 'mov_id', index: 'mov_id', align: 'left',width: 10, hidden:true},
                 {name: 'id_item', index: 'id_item', align: 'center', width: 15, hidden:true},
-                {name: 'item_id', index: 'item_id', align: 'center', width: 15},
+                {name: 'item_id', index: 'item_id', align: 'left', width: 30},
                 {name: 'id_pvt_ori', index: 'id_pvt_ori', align: 'center', width: 10, hidden:true},
-                {name: 'pvt_ori', index: 'pvt_ori', align: 'left', width: 17},
+                {name: 'pvt_ori', index: 'pvt_ori', align: 'left', width: 19},
                 {name: 'id_pvt_des', index: 'id_pvt_des', align: 'left', width: 20, hidden:true},
-                {name: 'pvt_des', index: 'pvt_des', align: 'left', width: 17},
-                {name: 'usu_id', index: 'usu_id', align: 'left', width: 20},
+                {name: 'pvt_des', index: 'pvt_des', align: 'left', width: 19},
+                {name: 'usu_id', index: 'usu_id', align: 'left', width: 10},
                 {name: 'id_usuario', index: 'id_usuario', align: 'left', width: 15,hidden:true},
                 {name: 'mov_fec', index: 'mov_fec', align: 'center', width: 10},
                 {name: 'mov_est', index: 'mov_est', align: 'center', width: 10}
             ],
             pager: '#paginador_tabla_movimientos',
-            rowList: [10, 20, 30, 40, 50, 100000000],
+            rowList: [20, 30, 40, 50, 100000000],
             loadComplete: function() {
                 $("option[value=100000000]").text('TODOS');
             },
@@ -193,15 +189,48 @@
             dropdownParent: $("#Modal_Movimiento")
         });
 
-        $("#mdl_pvt_origen").select2({
-            dropdownParent: $("#Modal_Movimiento")
-        });
-
         $("#mdl_pvt_destino").select2({
             dropdownParent: $("#Modal_Movimiento")
         });
 
     });
+    
+    $('#mdl_mitem').on('select2:selecting', function(e) {
+        //console.log('Selecting: ' , e.params.args.data);
+        //console.log(e.params.args.data.id);
+        $.ajax({
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+            url: 'movimientos/'+e.params.args.data.id+'?datos=recuperar_pvt_origen',
+            type: 'GET',
+            beforeSend:function()
+            {            
+                $('#punto_venta_origen').block({
+                    message: "<p class='ClassMsgBlock'><img src={{ asset('img/cargando.gif') }} style='width: 18px;position: relative;top: -1px;'/>RECUPERANDO INFORMACION</p>",
+                    css: { border: '2px solid #006000',background:'white',width: '62%'}
+                });
+            },
+            success: function(data) 
+            {
+                html = '';
+                if (data.msg == 1) 
+                { 
+                    html = '<input type="hidden" id="mdl_pvt_origen" value="'+data.datos[0].pvt_des+'"><h4>PUNTO ORIGEN: '+data.datos[0].pvt_desc+'</h4>'
+                }
+                else
+                {
+                    html = '<input type="hidden" id="mdl_pvt_origen" value="'+data.datos[0].pvt_id+'"><h4>PUNTO ORIGEN: '+data.datos[0].pvt_desc+'</h4>'
+                }
+                $("#punto_venta_origen").html(html);
+                $("#punto_venta_origen").unblock();
+            },
+            error: function(data) {
+                MensajeAdvertencia("hubo un error, Comunicar al Administrador");
+                console.log('error');
+                console.log(data);
+            }
+        });
+    });
+    
 </script>
 @stop
 @endsection

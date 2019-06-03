@@ -22,7 +22,7 @@ hr {
                 <form enctype="multipart/form-data" id="FormularioTicket" name="FormularioTicket" method="POST">
                     <input type="hidden" name="_token" id="_token" value="{{ csrf_token() }}" data-token="{{ csrf_token() }}"> 
                     <div class="form-row">
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <label for="cbxtipo" class="fw-500">TIPO:</label>
                             <select id="cbxtipo" name="cbxtipo" class="form-control rounded">
                                 <option selected value="0">..:: SELECCIONAR UN TIPO ::..</option>
@@ -31,13 +31,20 @@ hr {
                                 @endfor             
                             </select>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <label for="cbxarea" class="fw-500">DIRIGIDO A:</label>
                             <select id="cbxarea" name="cbxarea" class="form-control rounded">
                                 <option selected value="0">..:: SELECCIONAR UN AREA ::..</option>
                                 @for ($x = 0; $x < $numare; $x++)          
                                 <option value="{{ $datos['AREA']->IDAREA[$x] }}">{{ $datos['AREA']->DESAREA[$x] }}</option>
                                 @endfor 
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="cbxsubarea" class="fw-500">SUB-AREA:</label>
+                            <select id="cbxsubarea" name="cbxsubarea" class="form-control rounded">
+                                <option selected value="0">..:: SELECCIONAR UNA SUBAREA ::..</option>
+                                
                             </select>
                         </div>
                     </div>
@@ -93,6 +100,36 @@ hr {
 <script>
     $('#{{ $permiso[0]->men_sistema }}').addClass('open');
     $('.{{ $permiso[0]->sme_ruta }}').addClass('selector_submenu');
+    
+    jQuery(document).on("change","#cbxarea",function(){
+        $.ajax({
+            url: 'ticketnuevo/'+$(this).val()+'?datos=traer_subareas',
+            type: 'GET',
+            beforeSend:function()
+            {            
+                $('#cbxsubarea').parent().block({
+                    message: "<p class='ClassMsgBlock'><img src={{ asset('img/cargando.gif') }} style='width: 18px;position: relative;top: -1px;'/>PROCESANDO INFORMACION</p>",
+                    css: { border: '2px solid #006000',background:'white',width: '62%'}
+                });
+            },
+            success: function(data) 
+            {
+                html = '<option selected value="0">..:: SELECCIONAR UNA SUBAREA ::..</option>';
+                for(i=0;i<data.length;i++)
+                {
+                    html = html+'<option value='+data[i].suba_id+'>'+data[i].suba_desc+'</option>';
+                }
+                
+                $("#cbxsubarea").html(html);
+                $("#cbxsubarea").parent().unblock();
+            },
+            error: function(data) {
+                MensajeAdvertencia("hubo un error, Comunicar al Administrador");
+                console.log('error');
+                console.log(data);
+            }
+        });
+    });
 </script>
 @stop
 @endsection

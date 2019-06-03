@@ -183,7 +183,7 @@
             pgtext: null, 
             //cmTemplate: { sortable: false },
             colNames: ['ID', 'SERIE', 'NUMERO', 'MONTO', 'FECHA REGISTRO', 'ID_PRODUCTO','PRODUCTO', 'ID_MON', 'MONEDA','ARCHIVAR'],
-            rowNum: 10, sortname: 'fact_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_factura" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE FACTURAS - ', align: "center",
+            rowNum: 20, sortname: 'fact_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_factura" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE FACTURAS - ', align: "center",
             colModel: [
                 {name: 'fact_id', index: 'fact_id', align: 'left',width: 10, hidden:true},
                 {name: 'fact_serie', index: 'fact_serie', align: 'center', width: 20},
@@ -197,7 +197,7 @@
                 {name: 'fact_img', index: 'fact_img', align: 'center', width: 15}
             ],
             pager: '#paginador_tabla_facturas',
-            rowList: [10, 20, 30, 40, 50, 100000000],
+            rowList: [20, 30, 40, 50, 100000000],
             loadComplete: function() {
                 $("option[value=100000000]").text('TODOS');
             },

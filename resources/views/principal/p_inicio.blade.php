@@ -307,6 +307,7 @@
         <script type="text/javascript" src="{{ asset('js/select2.full.min.js') }}"></script>
         <script src="https://js.pusher.com/4.2/pusher.min.js"></script>
         <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+        <script type="text/javascript" src="{{ asset('js/block_ui.js') }}"></script>
         <script type="text/javascript" src="{{ asset('archivos_js/funciones_globales.js') }}"></script>
 
         <script type="text/javascript">

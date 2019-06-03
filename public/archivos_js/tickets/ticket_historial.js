@@ -10,7 +10,7 @@ jQuery(document).ready(function($){
         pgbuttons: false,
         pgtext: null, 
         colNames: ['ID', 'TITULO', 'TIPO', 'AREA', 'PRIORIDAD', 'ESTADO', 'FECHA', 'VER TICKET'],
-        rowNum: 10, sortname: 'cabt_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_tickets_historial" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE TICKETS CREADOS -', align: "center",
+        rowNum: 20, sortname: 'cabt_id', sortorder: 'desc', viewrecords: true, caption: '<button id="btn_act_table_tickets_historial" type="button" class="btn btn-danger"><i class="fa fa-gear"></i> ACTUALIZAR <i class="fa fa-gear"></i></button> - LISTA DE TICKETS CREADOS -', align: "center",
         colModel: [
             {name: 'cabt_id', index: 'cabt_id', align: 'left',width: 20, hidden: true},
             {name: 'cabt_asunto', index: 'cabt_asunto', align: 'left', width: 40},
@@ -22,7 +22,7 @@ jQuery(document).ready(function($){
             {name: 'cabt_id', index: 'cabt_id', align: 'center', width: 25}
         ],
         pager: '#paginador_tabla_historial_tickets',
-        rowList: [10, 20, 30, 40, 50, 100000000],
+        rowList: [20, 30, 40, 50, 100000000],
         loadComplete: function() {
             $("option[value=100000000]").text('TODOS');
         },

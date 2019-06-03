@@ -40,7 +40,10 @@ class Movimiento_Controller extends BaseSoapController
     {
         if ($id > 0) 
         {
-            
+            if ($request['datos'] == 'recuperar_pvt_origen') 
+            {
+                return $this->recuperar_datos_pvt_origen($id,$request);
+            }
         }
         else
         {
@@ -565,6 +568,27 @@ class Movimiento_Controller extends BaseSoapController
             $val->save();
         }
         return $id_item;
+    }
+    
+    public function recuperar_datos_pvt_origen($id, Request $request)
+    {
+        $datos = DB::select("select a.mov_id,a.item_id,a.pvt_des,b.pvt_desc from cromohelp.tbl_movimientos a
+                    inner join cromohelp.tbl_pvt b on a.pvt_des = b.pvt_id where item_id = ".$id." order by mov_id desc limit 1");
+        if (count($datos) > 0) 
+        {
+            return response()->json([
+                'msg' => '1',
+                'datos' => $datos
+            ]);
+        }
+        else
+        {
+            $pvt = DB::select("select * from cromohelp.tbl_pvt where pvt_id = 50");
+            return response()->json([
+                'msg' => '0',
+                'datos' => $pvt
+            ]);
+        }
     }
 
 }

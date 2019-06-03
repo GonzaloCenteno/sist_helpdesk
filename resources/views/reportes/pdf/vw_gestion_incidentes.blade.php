@@ -20,7 +20,7 @@
                         <td style="width: 20%; text-align: center; background-color: #C32227;" ROWSPAN="4">
                             <img src="img/img_cromotex/logo_cromotex_reporte.png" height="75px"/>
                         </td>
-                        <td style="width: 60%; text-align: center;" ROWSPAN="2" colspan="5"><b>PROCESO DE TI</b></td>
+                        <td style="width: 60%; text-align: center;" ROWSPAN="2" colspan="6"><b>PROCESO DE TI</b></td>
                         <td style="width: 8%; text-align: left; font-size: 0.6em;">CODIGO:</td>
                         <td style="width: 14%; text-align: left; font-size: 0.6em;">TC TI-PR 10 01</td>
                     </tr>
@@ -29,7 +29,7 @@
                         <td style="text-align: left; font-size: 0.6em;">0</td> 
                     </tr>
                     <tr>
-                        <td style="text-align: center;" ROWSPAN="2" colspan="5"><b>REGISTRO DE GESTIÓN DE INCIDENTES, PROBLEMAS Y EVENTOS DE TI</b></td> 
+                        <td style="text-align: center;" ROWSPAN="2" colspan="6"><b>REGISTRO DE GESTIÓN DE INCIDENTES, PROBLEMAS Y EVENTOS DE TI</b></td> 
                         <td style="text-align: left; font-size: 0.6em;">ACTUALIZACION:</td> 
                         <td style="text-align: left; font-size: 0.6em;">xx/xx/xxxx</td> 
                     </tr>
@@ -39,14 +39,15 @@
                             <script type="text/php">
                                 if ( isset($pdf) ) {
                                     $font = $fontMetrics->getFont("Arial, sans-serif", "bold");
-                                    $pdf->page_text(742, 85, "{PAGE_NUM} DE {PAGE_COUNT}", $font, 8, array(0,0,0));
+                                    $pdf->page_text(752, 91, "{PAGE_NUM} DE {PAGE_COUNT}", $font, 8, array(0,0,0));
                                 }
                             </script>
                         </td> 
                     </tr>
                     <tr>
                         <td style="width: 15%; text-align: center; background-color: #B3C6E7; font-size: 0.5em;"><b>FECHA CREACION</b></td>
-                        <td style="width: 15%; text-align: center; background-color: #B3C6E7; font-size: 0.5em;"><b>AREA</b></td>
+                        <td style="width: 7%; text-align: center; background-color: #B3C6E7; font-size: 0.5em;"><b>AREA</b></td>
+                        <td style="width: 7%; text-align: center; background-color: #B3C6E7; font-size: 0.5em;"><b>SUB-AREA</b></td>
                         <td style="width: 30%; text-align: center; background-color: #B3C6E7; font-size: 0.5em;"><b>ASUNTO</b></td>
                         <td style="width: 10%; text-align: center; background-color: #B3C6E7; font-size: 0.5em;"><b>ESTADO</b></td>
                         <td style="width: 10%; text-align: center; background-color: #B3C6E7; font-size: 0.5em;"><b>USU CREACION</b></td>
@@ -60,6 +61,7 @@
                         <tr style="font-size: 0.9em;">
                             <td style="text-align: right; font-size: 0.6em;">{{ $dat->fec_completa }}</td>
                             <td style="text-align: left; font-size: 0.6em;">{{ $dat->are_desc }}</td>
+                            <td style="text-align: left; font-size: 0.6em;">{{ $dat->suba_desc }}</td>
                             <td style="text-align: left; font-size: 0.6em;">{{ $dat->cabt_asunto }}</td>
                             <td style="text-align: center; font-size: 0.6em;">{{ $dat->desc_est }}</td>
                             <td style="text-align: center; font-size: 0.6em;">{{ $dat->cabt_usucre }}</td>

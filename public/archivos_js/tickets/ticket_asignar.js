@@ -22,7 +22,7 @@ jQuery(document).ready(function($){
             {name: 'cabt_id', index: 'cabt_id', align: 'center', width: 25}
         ],
         pager: '#paginador_tabla_asignar_tickets',
-        rowList: [10, 20, 30, 40, 50, 100000000],
+        rowList: [20, 30, 40, 50, 100000000],
         loadComplete: function() {
             $("option[value=100000000]").text('TODOS');
         },

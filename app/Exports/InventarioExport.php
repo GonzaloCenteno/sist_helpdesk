@@ -9,9 +9,8 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\RegistersEventListeners;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Events\BeforeExport;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
  
-class IncidentesExport implements FromView,WithTitle,WithEvents,ShouldAutoSize
+class InventarioExport implements FromView,WithTitle,WithEvents
 {
  
     private $data;
@@ -23,21 +22,21 @@ class IncidentesExport implements FromView,WithTitle,WithEvents,ShouldAutoSize
     
     public function view(): View
     {
-        return view('reportes.excel.vw_gestion_incidentes_ex', [
-            'datos' => $this->data
+        return view('reportes.excel.vw_gestion_inventario_ex', [
+            'datos' => $this->data,
         ]);
     }
     
     public function title(): string
     {
-        return 'INCIDENTES';
+        return 'INVENTARIO';
     }
     
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
-                $cellRange = 'B1:H4';
+                $cellRange = 'B1:G4';
                 $event->sheet->getDelegate()->getStyle($cellRange)->getFont()->setSize(12);
  
                 $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
@@ -48,7 +47,7 @@ class IncidentesExport implements FromView,WithTitle,WithEvents,ShouldAutoSize
 
                 $drawing->setWorksheet($event->sheet->getDelegate());
                 $event->getSheet()->autoSize();
-                $event->sheet->getStyle('G1:I4')->applyFromArray([
+                $event->sheet->getStyle('G1:G4')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'family' => 'Calibri'
@@ -60,7 +59,7 @@ class IncidentesExport implements FromView,WithTitle,WithEvents,ShouldAutoSize
                         ],
                     ],
                 ]);
-                $event->sheet->getStyle('A5:I5')->applyFromArray([
+                $event->sheet->getStyle('A5:G5')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'family' => 'Calibri'
@@ -91,17 +90,17 @@ class IncidentesExport implements FromView,WithTitle,WithEvents,ShouldAutoSize
                     ],
                 ]);
                 $event->getSheet()->getDelegate()->getStyle('A3:H3')
-                    ->getAlignment();
+                ->getAlignment();
             },
             BeforeExport::class => function(BeforeExport $event) {
                 $event->getWriter()->getDelegate()
                     ->getProperties()
                     ->setCreator("Enzo Edir Velásquez Lobatón")
                     ->setLastModifiedBy("Enzo Edir Velásquez Lobatón")
-                    ->setTitle("REGISTRO DE GESTIÓN DE INCIDENTES, PROBLEMAS Y EVENTOS DE TI")
-                    ->setSubject("REGISTRO DE GESTIÓN DE INCIDENTES, PROBLEMAS Y EVENTOS DE TI")
+                    ->setTitle("GESTION Y MANTENIMIENTO DE INVENTARIO")
+                    ->setSubject("GESTION Y MANTENIMIENTO DE INVENTARIO")
                     ->setDescription(
-                        "INCIDENTES PROBLEMAS Y EVENTOS DE TI"
+                        "GESTION DE INVENTARIO"
                     )
                 ;
             }

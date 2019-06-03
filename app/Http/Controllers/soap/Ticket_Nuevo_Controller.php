@@ -37,7 +37,13 @@ class Ticket_Nuevo_Controller extends BaseSoapController
 
     public function show($id, Request $request)
     {
-
+        if ($id > 0) 
+        {
+            if ($request['datos'] == 'traer_subareas') 
+            {
+                return $this->traer_subareas($id, $request);
+            }
+        }
     }
 
     public function create(Request $request)
@@ -45,7 +51,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
     
     }
 
-    public function edit($id_usuario,Request $request)
+    public function edit($id,Request $request)
     {
               
     }
@@ -60,6 +66,7 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         $validator = Validator::make($request->all(), [
             'cbxtipo' => 'required|not_in:0',
             'cbxarea' => 'required|not_in:0',
+            'cbxsubarea' => 'required|not_in:0',
             'cbxpri' => 'required|not_in:0',
             'txfecha' => 'required|string',
             'intitulo' => 'required|string',
@@ -67,12 +74,14 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         ],[
             'cbxtipo.required' => 'EL CAMPO TIPO ES OBLIGATORIO',
             'cbxarea.required' => 'EL CAMPO AREA ES OBLIGATORIO',
+            'cbxsubarea.required' => 'EL CAMPO SUB-AREA ES OBLIGATORIO',
             'cbxpri.required' => 'EL CAMPO PRIORIDAD ES OBLIGATORIO',
             'txfecha.required' => 'EL CAMPO FECHA ES OBLIGATORIO',
             'intitulo.required' => 'EL CAMPO TITULO ES OBLIGATORIO',
             'descripcion.required' => 'EL CAMPO DESCRIPCION ES OBLIGATORIO',
             'cbxtipo.not_in' => 'DEBES SELECCIONAR UN CAMPO VALIDO',
             'cbxarea.not_in' => 'DEBES SELECCIONAR UNA AREA VALIDA',
+            'cbxsubarea.not_in' => 'DEBES SELECCIONAR UNA SUB-AREA VALIDA',
             'cbxpri.not_in' => 'DEBES SELECCIONAR UNA PRIORIDAD VALIDA',
         ]);
         
@@ -93,6 +102,9 @@ class Ticket_Nuevo_Controller extends BaseSoapController
 
             $arx=$xml->createElement('ARE',$request['cbxarea']); 
             $arx =$root->appendChild($arx);
+            
+            $subarx=$xml->createElement('SUBARE',$request['cbxsubarea']); 
+            $subarx =$root->appendChild($subarx);
 
             $prx=$xml->createElement('PRI',$request['cbxpri']); 
             $prx =$root->appendChild($prx);
@@ -266,4 +278,11 @@ class Ticket_Nuevo_Controller extends BaseSoapController
         
         return $datos;
     }
+    
+    public function traer_subareas($id_area, Request $request)
+    {
+        $datos = DB::table('cromohelp.tbl_subarea')->where('suba_area',$id_area)->orderBy('suba_desc','asc')->get();
+        return $datos;
+    }
+    
 }
