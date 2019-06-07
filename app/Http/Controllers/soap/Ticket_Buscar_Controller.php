@@ -14,7 +14,7 @@ class Ticket_Buscar_Controller extends BaseSoapController
     {
         if ($request->session()->has('id_usuario'))
         {
-            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')]])->orderBy('ume_orden','asc')->get();
+            $menu = DB::table('permisos.vw_rol_menu_usuario')->where([['ume_usuario',session('id_usuario')],['sist_id',session('sist_id')],['ume_estado',1]])->orderBy('ume_orden','asc')->get();
             $permiso = DB::table('permisos.vw_rol_submenu_usuario')->where([['usm_usuario',session('id_usuario')],['sist_id',session('sist_id')],['sme_sistema','li_config_tickets_creados'],['btn_view',1]])->get();
             $prioridad = DB::table('cromohelp.tbl_prioridad')->orderBy('prio_id','asc')->get();
             if ($permiso->count() == 0) 
